@@ -1,9 +1,31 @@
 export interface User {
   id: string;
-  email: string;
+  email: string; // Work email (system login)
   name: string;
   role: 'EMPLOYEE' | 'ADMIN' | 'SUPERADMIN';
   organizationId: string;
+  // Personal info
+  firstName?: string;
+  lastName?: string;
+  privateEmail?: string; // Private email address
+  address?: {
+    street?: string;
+    postalCode?: string;
+    city?: string;
+  };
+  phone?: string;
+  bankDetails?: {
+    iban?: string;
+    bic?: string;
+  };
+  // Work info
+  position?: string;
+  department?: string;
+  weeklyHours?: number;
+  employmentType?: 'FULL_TIME' | 'PART_TIME' | 'MINI_JOB';
+  joinDate?: string;
+  employmentStatus?: 'ACTIVE' | 'PARENTAL_LEAVE' | 'TERMINATED';
+  vacationDays?: number; // Total vacation days per year
 }
 
 export interface Organization {
@@ -21,6 +43,8 @@ export interface LeaveRequest {
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   type: 'VACATION' | 'SICK';
   createdAt: string;
+  approvedBy?: string; // User ID who approved/rejected
+  approvedAt?: string; // Timestamp when approved/rejected
 }
 
 export interface SickNote {
