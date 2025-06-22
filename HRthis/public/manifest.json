@@ -1,0 +1,15 @@
+{
+  "short_name": "HRthis",
+  "name": "HRthis - Mitarbeiter Portal",
+  "icons": [
+    {
+      "src": "HRdiese logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff"
+}
