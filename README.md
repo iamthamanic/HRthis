@@ -1,6 +1,6 @@
-# WorkyTime
+# HRthis
 
-**WorkyTime** ist eine mobile App zur Zeiterfassung, Urlaubsverwaltung und Dokumenteneinsicht – entwickelt mit [Vibecode](https://vibecode.com) auf Basis von React Native, Tailwind CSS und modernen Komponenten.
+**HRthis** ist eine mobile App zur Zeiterfassung, Urlaubsverwaltung und Dokumenteneinsicht – entwickelt mit [Vibecode](https://vibecode.com) auf Basis von React Native, Tailwind CSS und modernen Komponenten.
 
 ## 🚀 Features
 
@@ -65,6 +65,7 @@ npx expo start
 ## 📄 Lizenz
 
 MIT License – Feel free to use, modify, and improve.
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/iamthamanic/workytime?utm_source=oss&utm_medium=github&utm_campaign=iamthamanic%2Fworkytime&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 ---
 
