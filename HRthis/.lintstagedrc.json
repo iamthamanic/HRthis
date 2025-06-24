@@ -1,0 +1,10 @@
+{
+  "src/**/*.{ts,tsx}": [
+    "eslint --fix",
+    "prettier --write",
+    "npm run type-check"
+  ],
+  "src/**/*.{json,css,md}": [
+    "prettier --write"
+  ]
+}

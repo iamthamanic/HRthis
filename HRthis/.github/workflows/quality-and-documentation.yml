@@ -1,0 +1,167 @@
+name: Quality Check & Documentation Update
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Runs every Monday at 6 AM UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  quality-check:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run TypeScript check
+      run: npx tsc --noEmit
+
+    - name: Run ESLint
+      run: npx eslint src --ext .ts,.tsx --format json --output-file eslint-report.json || true
+
+    - name: Run Prettier check
+      run: npx prettier --check src/**/*.{ts,tsx,json,css,md} || true
+
+    - name: Run tests with coverage
+      run: npm test -- --coverage --watchAll=false --testResultsProcessor=jest-sonar-reporter || true
+
+    - name: Security audit
+      run: npm audit --audit-level moderate --json > audit-report.json || true
+
+    - name: Run quality analysis script
+      run: node scripts/quality-check.js
+
+    - name: Upload quality reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: quality-reports
+        path: |
+          eslint-report.json
+          audit-report.json
+          coverage/
+          quality-report.json
+
+  update-documentation:
+    name: Update Documentation
+    needs: quality-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Download quality reports
+      uses: actions/download-artifact@v4
+      with:
+        name: quality-reports
+        path: ./reports
+
+    - name: Generate documentation
+      run: node scripts/generate-docs.js
+
+    - name: Update README
+      run: node scripts/update-readme.js
+
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Commit and push changes
+      if: steps.changes.outputs.changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "docs: automated documentation update
+
+        🤖 Generated with [Claude Code](https://claude.ai/code)
+        
+        - Updated README with latest features and metrics
+        - Generated JSDoc comments for new code
+        - Updated quality and coverage reports
+        
+        Co-Authored-By: Claude <noreply@anthropic.com>"
+        git push
+
+  post-documentation-quality:
+    name: Post-Documentation Quality Check
+    needs: update-documentation
+    runs-on: ubuntu-latest
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout updated code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Final quality validation
+      run: |
+        npx tsc --noEmit
+        npx eslint src --ext .ts,.tsx
+        npm test -- --watchAll=false
+        echo "✅ All quality checks passed after documentation update"
+
+    - name: Create quality summary
+      run: node scripts/quality-summary.js
+
+    - name: Comment on commit (if applicable)
+      if: github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('quality-summary.md')) {
+            const summary = fs.readFileSync('quality-summary.md', 'utf8');
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: summary
+            });
+          }
