@@ -255,7 +255,7 @@ export const AchievementsGallery: React.FC<AchievementsGalleryProps> = ({
   filterCategory,
   className
 }) => {
-  const { _getAchievements, _getUserAchievements, _getUnlockedAchievements, _getLockedAchievements, _getProgressStats } = useAchievementsStore();
+  const { getAchievements, getUserAchievements, getUnlockedAchievements, getLockedAchievements, getProgressStats } = useAchievementsStore();
   
   const [selectedCategory, setSelectedCategory] = useState<string>(filterCategory || 'all');
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);

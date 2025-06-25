@@ -389,27 +389,15 @@ export const DashboardScreen = () => {
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
-            onClick={() => navigate('/time')}
+            onClick={() => navigate('/time-vacation')}
             className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow text-left"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-3xl">⏰</span>
               <span className="text-gray-400">→</span>
             </div>
-            <h3 className="font-semibold text-gray-900">Arbeitszeit</h3>
-            <p className="text-sm text-gray-500 mt-1">Stempeln & Übersicht</p>
-          </button>
-
-          <button
-            onClick={() => navigate('/calendar')}
-            className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow text-left"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-3xl">📅</span>
-              <span className="text-gray-400">→</span>
-            </div>
-            <h3 className="font-semibold text-gray-900">Kalender</h3>
-            <p className="text-sm text-gray-500 mt-1">Urlaub & Termine</p>
+            <h3 className="font-semibold text-gray-900">Zeit & Urlaub</h3>
+            <p className="text-sm text-gray-500 mt-1">Arbeitszeit, Stempeln & Kalender</p>
           </button>
 
           <button

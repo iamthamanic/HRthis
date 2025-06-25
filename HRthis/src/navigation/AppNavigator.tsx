@@ -12,6 +12,7 @@ import { TimeRecordsScreen } from '../screens/TimeRecordsScreen';
 import { MyRequestsScreen } from '../screens/MyRequestsScreen';
 import { DocumentsScreen } from '../screens/DocumentsScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
+import { TimeAndVacationScreen } from '../screens/TimeAndVacationScreen';
 import { BenefitsScreen } from '../screens/BenefitsScreen';
 import { CoinHistoryScreen } from '../screens/CoinHistoryScreen';
 import { AdminCoinsScreen } from '../screens/AdminCoinsScreen';
@@ -65,8 +66,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const tabs = [
     { path: '/dashboard', label: 'Übersicht', icon: '🏠' },
     { path: '/requests', label: 'Anträge', icon: '📝' },
-    { path: '/time', label: 'Zeiten', icon: '⏰' },
-    { path: '/calendar', label: 'Urlaub', icon: '📅' },
+    { path: '/time-vacation', label: 'Zeit & Urlaub', icon: '⏰' },
     { path: '/learning', label: 'Lernen', icon: '🎓' },
     { path: '/benefits', label: 'Benefits', icon: '🎁' },
     { path: '/documents', label: 'Dokumente', icon: '📄' },
@@ -138,8 +138,10 @@ export const AppNavigator = () => {
       <Route path="/" element={<MainLayout><Navigate to="/dashboard" /></MainLayout>} />
       <Route path="/dashboard" element={<MainLayout><DashboardScreen /></MainLayout>} />
       <Route path="/requests" element={<MainLayout><MyRequestsScreen /></MainLayout>} />
-      <Route path="/time" element={<MainLayout><TimeRecordsScreen /></MainLayout>} />
-      <Route path="/calendar" element={<MainLayout><CalendarScreen /></MainLayout>} />
+      <Route path="/time-vacation" element={<MainLayout><TimeAndVacationScreen /></MainLayout>} />
+      {/* Legacy routes - redirect to time-vacation */}
+      <Route path="/time" element={<Navigate to="/time-vacation" />} />
+      <Route path="/calendar" element={<Navigate to="/time-vacation" />} />
       <Route path="/learning" element={<MainLayout><LearningDashboard /></MainLayout>} />
       <Route path="/benefits" element={<MainLayout><BenefitsScreen /></MainLayout>} />
       <Route path="/documents" element={<MainLayout><DocumentsScreen /></MainLayout>} />

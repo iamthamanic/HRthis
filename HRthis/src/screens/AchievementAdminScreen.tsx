@@ -441,7 +441,6 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
 
 /**
  * Achievement Admin Screen
- * Manage achievements, conditions, and rewards
  */
 export const AchievementAdminScreen: React.FC = () => {
   const { getAchievements, createAchievement, updateAchievement, deleteAchievement, toggleAchievementActive } = useAchievementsStore();
@@ -490,12 +489,12 @@ export const AchievementAdminScreen: React.FC = () => {
 
   const handleDeleteAchievement = (_achievementId: string) => {
     if (confirm('Möchtest du dieses Achievement wirklich löschen?')) {
-      deleteAchievement(achievementId);
+      deleteAchievement(_achievementId);
     }
   };
 
   const handleToggleActive = (_achievementId: string) => {
-    toggleAchievementActive(achievementId);
+    toggleAchievementActive(_achievementId);
   };
 
   // Statistics

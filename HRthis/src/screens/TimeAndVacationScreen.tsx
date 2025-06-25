@@ -1,4 +1,4 @@
-import _React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../state/auth';
 import { useLeavesStore } from '../state/leaves';
@@ -20,10 +20,10 @@ import { cn } from '../utils/cn';
 export const TimeAndVacationScreen = () => {
   const navigate = useNavigate();
   const { user, getAllUsers } = useAuthStore();
-  const { _getAllLeaveRequests } = useLeavesStore();
-  const { _getUnreadNotificationsForUser, _markAsRead, _removeAllUserNotifications } = useNotificationsStore();
-  const { getTimeRecordsForPeriod, _getTodayRecord, _isCurrentlyTracking, _clockIn, _clockOut } = useTimeRecordsStore();
-  const { _getTeamsByUserId } = useTeamsStore();
+  const { getAllLeaveRequests } = useLeavesStore();
+  const { getUnreadNotificationsForUser, markAsRead } = useNotificationsStore();
+  const { getTimeRecordsForPeriod, getTodayRecord, isCurrentlyTracking, clockIn, clockOut } = useTimeRecordsStore();
+  const { getTeamsByUserId } = useTeamsStore();
   
   const [view, setView] = useState<'monat' | 'jahr'>('monat');
   const [calendarType, setCalendarType] = useState<'mein' | 'team'>('mein');
@@ -160,7 +160,7 @@ export const TimeAndVacationScreen = () => {
   }, [user, displayUsers, allLeaves, getTimeRecordsForPeriod, calendarType]);
 
   // Handle cell click for calendar
-  const handleCellClick = (_userId: string, date: string) => {
+  const handleCellClick = (userId: string, date: string) => {
     // Open detail modal for work time entries
     const clickedDate = new Date(date);
     const dateStr = date;
@@ -225,7 +225,7 @@ export const TimeAndVacationScreen = () => {
   /**
    * Handle click on leave request - mark related notifications as read
    */
-  const handleLeaveRequestClick = (_leaveRequestId: string) => {
+  const handleLeaveRequestClick = (leaveRequestId: string) => {
     // Mark all related notifications as read
     unreadNotifications.forEach(notification => {
       if (notification.relatedId === leaveRequestId && 
@@ -461,7 +461,7 @@ export const TimeAndVacationScreen = () => {
               <button
                 onClick={() => {
                   console.log('Lösche Notifications für User:', user.id);
-                  removeAllUserNotifications(user.id);
+                  // removeAllUserNotifications(user.id); // Method needs to be implemented
                 }}
                 className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
               >
