@@ -2,6 +2,8 @@
 
 A modern React web application converted from Expo/React Native. HRthis is a comprehensive employee portal with personalized dashboards, time tracking, leave management, gamification, and administrative tools.
 
+🚀 **Live Demo**: [Coming soon on Vercel]
+
 ## 📊 Project Status
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
