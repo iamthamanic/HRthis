@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd HRthis && npm run build",
+  "outputDirectory": "HRthis/build",
+  "installCommand": "cd HRthis && npm install",
+  "framework": null
+}
