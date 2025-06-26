@@ -253,20 +253,20 @@ export const useGamificationStore = create<GamificationState>()(
       },
 
       getNotifications: (_userId: string) => {
-        return get().notifications.filter(n => n.userId === userId);
+        return get().notifications.filter(n => n.userId === _userId);
       },
 
       markNotificationAsRead: (_notificationId: string) => {
         set(state => ({
           notifications: state.notifications.map(n =>
-            n.id === notificationId ? { ...n, isRead: true } : n
+            n.id === _notificationId ? { ...n, isRead: true } : n
           )
         }));
       },
 
       clearNotifications: (_userId: string) => {
         set(state => ({
-          notifications: state.notifications.filter(n => n.userId !== userId)
+          notifications: state.notifications.filter(n => n.userId !== _userId)
         }));
       },
 
@@ -278,8 +278,8 @@ export const useGamificationStore = create<GamificationState>()(
           let xp = avatar.totalXP;
           let level = avatar.level;
           
-          if (skillId) {
-            const skill = avatar.skills.find(s => s.id === skillId);
+          if (_skillId) {
+            const skill = avatar.skills.find(s => s.id === _skillId);
             xp = skill?.totalXP || 0;
             level = skill?.level || 1;
           }

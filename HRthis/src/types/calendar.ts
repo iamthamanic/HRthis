@@ -11,6 +11,43 @@ export type CalendarEntry = {
 };
 
 /**
+ * Calendar view modes
+ */
+export type CalendarViewMode = "month" | "week" | "day" | "personal" | "team" | "year";
+
+/**
+ * Calendar view configuration
+ */
+export type CalendarView = CalendarViewMode;
+
+/**
+ * Calendar day representation
+ */
+export type CalendarDay = {
+  date: string;
+  entries: CalendarEntry[];
+  isToday: boolean;
+  isWeekend: boolean;
+};
+
+/**
+ * Calendar event (alias for CalendarEntry for backward compatibility)
+ */
+export type CalendarEvent = CalendarEntry;
+
+/**
+ * Calendar filter options
+ */
+export type CalendarFilter = {
+  userId?: string;
+  type?: CalendarEntry['type'];
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+};
+
+/**
  * Color mapping for different entry types
  */
 export const colorMap = {

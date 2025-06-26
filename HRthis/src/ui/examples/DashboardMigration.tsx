@@ -149,7 +149,7 @@ export const DashboardNew: React.FC = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Avatar Card */}
-          <Card onClick={() => navigate('/settings')} className="cursor-pointer hover:shadow-md transition-shadow">
+          <AvatarCard onClick={() => navigate('/settings')} className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader>
               <h3 className="text-caption font-semibold text-gray-700">Avatar</h3>
               <span className="text-xs text-gray-400 hover:text-gray-600">
@@ -193,7 +193,7 @@ export const DashboardNew: React.FC = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AvatarCard>
         </div>
       </div>
     </PageContainer>
