@@ -1,4 +1,34 @@
-# Raggadon Integration für Claude Code
+# Claude Code Projektgedächtnis für HRthis
+
+## Aktueller Projekt-Status (Stand: 2025-06-26)
+
+### ✅ **Letzter Savepoint: TypeScript Best Practices & Admin Navigation Fix**
+- **Commit:** `0b781cbf - feat: implement TypeScript best practices and fix admin navigation`
+- **Branch:** `main`
+- **Development Server:** http://localhost:3001 (Port 3001 wegen Konflikt auf 3000)
+
+### Implementierte Verbesserungen:
+1. **TypeScript Strict Mode** - tsconfig.json mit strengen Optionen erweitert
+2. **Zod Runtime-Validierung** - Validation.ts mit Schemas für User, Team, LeaveRequest erstellt
+3. **Admin Navigation Fix** - Route jetzt in MainLayout eingebettet, Header bleibt sichtbar
+4. **TypeScript-Fehler behoben** - Calendar-Types exportiert, Parameter-Namen korrigiert
+5. **Dependencies** - lucide-react, eslint-plugin-sonarjs, jspdf installiert
+
+### Admin-System Zugangsdaten:
+- **Email:** `anna.admin@hrthis.de`
+- **Passwort:** `password`
+- **Rolle:** ADMIN (kann alle Admin-Bereiche nutzen)
+
+### Bekannte Probleme:
+- ESLint-Warnungen (nicht kritisch): Funktionen zu lang, ungenutzte Imports
+- TypeScript-Warnungen in Calendar-Komponenten (funktioniert aber)
+
+### Nächste mögliche Schritte:
+- Calendar-Filter-Types verfeinern
+- Verbleibende TypeScript-Warnungen beheben
+- Admin-Funktionalitäten testen und erweitern
+
+## Raggadon Integration für Claude Code
 
 Dieses Dokument definiert, wie Claude Code mit Raggadon interagieren soll.
 
