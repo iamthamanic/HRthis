@@ -11,7 +11,7 @@ interface UserAvatarRowProps {
 }
 
 const UserAvatarRow: React.FC<UserAvatarRowProps> = ({ userId, userAvatar, onManageUser }) => {
-  const { _getUnlockedAchievements } = useAchievementsStore();
+  const { getUnlockedAchievements } = useAchievementsStore();
   const unlockedAchievements = getUnlockedAchievements(userId);
 
   return (
@@ -72,8 +72,8 @@ interface ManageUserModalProps {
 }
 
 const ManageUserModal: React.FC<ManageUserModalProps> = ({ userId, isOpen, onClose }) => {
-  const { _getUserAvatar, _addXP } = useAvatarStore();
-  const { _awardXP } = useGamificationStore();
+  const { getUserAvatar } = useAvatarStore();
+  const { awardXP } = useGamificationStore();
   const [xpAmount, setXpAmount] = useState('50');
   const [xpReason, setXpReason] = useState('');
   const [selectedSkill, setSelectedSkill] = useState('');
@@ -242,8 +242,8 @@ const ManageUserModal: React.FC<ManageUserModalProps> = ({ userId, isOpen, onClo
  * Main management interface for the avatar and gamification system
  */
 export const AvatarSystemAdminScreen: React.FC = () => {
-  const { _userAvatars, _getAllUserAvatars } = useAvatarStore();
-  const { config, updateConfig, _getLeaderboard } = useGamificationStore();
+  const { getAllUserAvatars } = useAvatarStore();
+  const { config, updateConfig, getLeaderboard } = useGamificationStore();
   const [selectedTab, setSelectedTab] = useState('users');
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');

@@ -20,8 +20,8 @@ export const AvatarMini: React.FC<AvatarMiniProps> = ({
   className,
   showProgress = true
 }) => {
-  const { _getUserAvatar } = useAvatarStore();
-  const { _getUnlockedAchievements } = useAchievementsStore();
+  const { getUserAvatar } = useAvatarStore();
+  const { getUnlockedAchievements } = useAchievementsStore();
   
   const userAvatar = getUserAvatar(userId);
   const unlockedAchievements = getUnlockedAchievements(userId);

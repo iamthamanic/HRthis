@@ -20,8 +20,8 @@ export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
   onEdit,
   className
 }) => {
-  const { _getUserAvatar } = useAvatarStore();
-  const { _getUserAchievements, _getUnlockedAchievements } = useAchievementsStore();
+  const { getUserAvatar } = useAvatarStore();
+  const { getUserAchievements, getUnlockedAchievements } = useAchievementsStore();
   
   const userAvatar = getUserAvatar(userId);
   const userAchievements = getUserAchievements(userId);
@@ -103,7 +103,7 @@ export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
         <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">Skills</h3>
         
         <div className="space-y-4">
-          {userAvatar.skills.map((skill) => {
+          {userAvatar.skills.map((skill: any) => {
             const skillProgress = skill.currentXP > 0 && skill.level > 1
               ? ((skill.currentXP / (skill.totalXP / skill.level)) * 100)
               : (skill.totalXP > 0 ? 25 : 0); // Default progress for visualization
@@ -160,7 +160,7 @@ export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
         
         {unlockedAchievements.length > 0 ? (
           <div className="flex justify-center gap-4 flex-wrap">
-            {unlockedAchievements.slice(0, 6).map((achievement) => (
+            {unlockedAchievements.slice(0, 6).map((achievement: any) => (
               <div
                 key={achievement.id}
                 className="relative group cursor-pointer transform hover:scale-110 transition-transform"

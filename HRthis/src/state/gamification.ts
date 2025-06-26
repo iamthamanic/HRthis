@@ -299,16 +299,16 @@ export const useGamificationStore = create<GamificationState>()(
 
       initializeUserGamification: (_userId: string) => {
         const avatarStore = useAvatarStore.getState();
-        const existingAvatar = avatarStore.getUserAvatar(userId);
+        const existingAvatar = avatarStore.getUserAvatar(_userId);
         
         if (!existingAvatar) {
-          avatarStore.createUserAvatar(userId);
+          avatarStore.createUserAvatar(_userId);
         }
         
         // Award welcome XP
         get().awardXP({
           type: 'manual',
-          userId,
+          userId: _userId,
           xpAmount: 25,
           metadata: { reason: 'Willkommen bei HRthis!' }
         });
@@ -318,8 +318,8 @@ export const useGamificationStore = create<GamificationState>()(
         const avatarStore = useAvatarStore.getState();
         const achievementsStore = useAchievementsStore.getState();
         
-        const userAvatar = avatarStore.getUserAvatar(userId);
-        const userAchievements = achievementsStore.getUserAchievements(userId);
+        const userAvatar = avatarStore.getUserAvatar(_userId);
+        const userAchievements = achievementsStore.getUserAchievements(_userId);
         const leaderboard = get().getLeaderboard();
         
         if (!userAvatar) {
@@ -333,7 +333,7 @@ export const useGamificationStore = create<GamificationState>()(
         }
 
         // Calculate weekly XP (this would need proper date tracking)
-        const weeklyXP = avatarStore.getXPEvents(userId, 50)
+        const weeklyXP = avatarStore.getXPEvents(_userId, 50)
           .filter(event => {
             const eventDate = new Date(event.createdAt);
             const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -341,7 +341,7 @@ export const useGamificationStore = create<GamificationState>()(
           })
           .reduce((sum, event) => sum + event.xpAmount, 0);
 
-        const rank = leaderboard.findIndex(entry => entry.userId === userId) + 1;
+        const rank = leaderboard.findIndex(entry => entry.userId === _userId) + 1;
 
         return {
           level: userAvatar.level,
