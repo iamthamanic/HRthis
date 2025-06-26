@@ -47,7 +47,7 @@
     "docs:generate": "node scripts/generate-docs.js",
     "readme:update": "node scripts/update-readme.js",
     "pre-commit": "lint-staged",
-    "prepare": "husky install"
+    "prepare": "husky install || true"
   },
   "eslintConfig": {
     "extends": [
