@@ -9,6 +9,8 @@ import { AddEmployeeScreen } from './AddEmployeeScreen';
 import { TeamMemberDetailsScreen } from './TeamMemberDetailsScreen';
 import { TeamsOverviewScreen } from './TeamsOverviewScreen';
 import { DashboardInfoAdminScreen } from './DashboardInfoAdminScreen';
+import { AvatarSystemAdminScreen } from './AvatarSystemAdminScreen';
+import { BenefitsScreen } from './BenefitsScreen';
 
 // Placeholder components for new admin sections
 const OrganigramScreen = () => (
@@ -29,41 +31,7 @@ const OrganigramScreen = () => (
   </div>
 );
 
-const AvatarManagementScreen = () => (
-  <div className="flex-1 bg-gray-50 min-h-screen">
-    <div className="max-w-7xl mx-auto px-6 py-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Avatarverwaltung</h1>
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-        <div className="text-6xl mb-4">🎮</div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Gamification Management</h2>
-        <p className="text-gray-600">
-          Verwalten Sie Level, Ränge, Achievements und Avatare für das Mitarbeiter-Gamification-System.
-        </p>
-        <div className="mt-6 text-sm text-gray-500">
-          Feature wird in Kürze verfügbar sein.
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
-const BenefitsManagementScreen = () => (
-  <div className="flex-1 bg-gray-50 min-h-screen">
-    <div className="max-w-7xl mx-auto px-6 py-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Benefitsverwaltung</h1>
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-        <div className="text-6xl mb-4">💎</div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Benefits & Coin-System</h2>
-        <p className="text-gray-600">
-          Verwalten Sie alle Benefit-Angebote und konfigurieren Sie das Coin-System.
-        </p>
-        <div className="mt-6 text-sm text-gray-500">
-          Feature wird in Kürze verfügbar sein.
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 /**
  * Admin Layout mit Submenu
@@ -176,9 +144,21 @@ export const AdminScreen = () => {
           <TeamManagementScreen />
         </AdminLayout>
       } />
-      <Route path="/team-management/add-employee" element={<AddEmployeeScreen />} />
-      <Route path="/team-management/user/:userId" element={<TeamMemberDetailsScreen />} />
-      <Route path="/team-management/teams" element={<TeamsOverviewScreen />} />
+      <Route path="/team-management/add-employee" element={
+        <AdminLayout>
+          <AddEmployeeScreen />
+        </AdminLayout>
+      } />
+      <Route path="/team-management/user/:userId" element={
+        <AdminLayout>
+          <TeamMemberDetailsScreen />
+        </AdminLayout>
+      } />
+      <Route path="/team-management/teams" element={
+        <AdminLayout>
+          <TeamsOverviewScreen />
+        </AdminLayout>
+      } />
       
       {/* New Admin Routes */}
       <Route path="/organigram" element={
@@ -188,12 +168,12 @@ export const AdminScreen = () => {
       } />
       <Route path="/avatar-management" element={
         <AdminLayout>
-          <AvatarManagementScreen />
+          <AvatarSystemAdminScreen />
         </AdminLayout>
       } />
       <Route path="/benefits-management" element={
         <AdminLayout>
-          <BenefitsManagementScreen />
+          <BenefitsScreen />
         </AdminLayout>
       } />
       <Route path="/dashboard-info" element={

@@ -119,14 +119,17 @@ export const TeamManagementScreen = () => {
           </div>
           <div className="flex gap-3">
             <Link
-              to="/team-management/teams"
+              to="/admin/team-management/teams"
               className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 font-medium"
             >
               Teams verwalten
             </Link>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            <Link
+              to="/admin/team-management/add-employee"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium inline-block"
+            >
               + Mitarbeiter hinzufügen
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -343,7 +346,7 @@ export const TeamManagementScreen = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link
-                      to={`/team-management/user/${member.id}`}
+                      to={`/admin/team-management/user/${member.id}`}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
                       Details
