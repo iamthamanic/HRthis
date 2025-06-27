@@ -7,7 +7,6 @@ import {
   XPEvent, 
   LevelUpEvent,
   DEFAULT_SKILLS,
-  SKILL_IDS,
   calculateXPProgress,
   calculateLevelFromXP
 } from '../types/avatar';
@@ -68,6 +67,31 @@ const mockLevels: Level[] = [
   { id: '9', levelNumber: 9, title: 'Profi', requiredXP: 2200, icon: '🏆', color: '#F59E0B' },
   { id: '10', levelNumber: 10, title: 'Sensei', requiredXP: 2700, icon: '🥇', color: '#EF4444' }
 ];
+
+// Helper function to calculate new level based on XP
+const calculateLevel = (totalXP: number, levels: Level[]): number => {
+  for (let i = levels.length - 1; i >= 0; i--) {
+    if (totalXP >= levels[i].requiredXP) {
+      return levels[i].level;
+    }
+  }
+  return 1;
+};
+
+
+// Helper function to update skill XP and level
+const updateSkillXP = (skill: Skill, xpAmount: number, levels: Level[]): Skill => {
+  const newTotalXP = skill.totalXP + xpAmount;
+  const newLevel = calculateLevel(newTotalXP, levels);
+  const newCurrentXP = newTotalXP - (levels.find(l => l.level === newLevel)?.requiredXP || 0);
+  
+  return {
+    ...skill,
+    currentXP: newCurrentXP,
+    totalXP: newTotalXP,
+    level: newLevel
+  };
+};
 
 export const useAvatarStore = create<AvatarState>()(
   persist(
@@ -147,23 +171,15 @@ export const useAvatarStore = create<AvatarState>()(
           if (skillId) {
             updatedAvatar.skills = updatedAvatar.skills.map(skill => {
               if (skill.id === skillId) {
-                const newTotalXP = skill.totalXP + xpAmount;
-                const skillProgress = calculateXPProgress(newTotalXP);
-                
-                return {
-                  ...skill,
-                  currentXP: skillProgress.currentLevelXP,
-                  totalXP: newTotalXP,
-                  level: skillProgress.level
-                };
+                return updateSkillXP(skill, xpAmount, state.levels);
               }
               return skill;
             });
           }
           
-          // Update overall level progress
+          // Update overall level progress  
+          updatedAvatar.level = calculateLevel(updatedAvatar.totalXP, state.levels);
           const overallProgress = calculateXPProgress(updatedAvatar.totalXP);
-          updatedAvatar.level = overallProgress.level;
           updatedAvatar.currentLevelXP = overallProgress.currentLevelXP;
           updatedAvatar.nextLevelXP = overallProgress.nextLevelXP;
           updatedAvatar.lastActiveAt = now;
