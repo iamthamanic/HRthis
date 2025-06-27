@@ -50,6 +50,76 @@ interface AchievementsState {
   getTotalFeedbackGiven: (_userId: string) => number;
 }
 
+// Helper function to update quarterly stats
+const updateQuarterlyStats = (
+  quarterlyStats: any, 
+  eventType: string, 
+  value: number, 
+  currentQuarter: string
+) => {
+  const updatedStats = { ...quarterlyStats };
+  
+  if (updatedStats.quarter !== currentQuarter) {
+    // Reset for new quarter
+    updatedStats.quarter = currentQuarter;
+    updatedStats.coinsEarned = 0;
+    updatedStats.trainingsCompleted = 0;
+    updatedStats.punctualDays = 0;
+    updatedStats.feedbackGiven = 0;
+  }
+
+  switch (eventType) {
+    case 'coins_earned':
+      updatedStats.coinsEarned += value;
+      break;
+    case 'training_completed':
+      updatedStats.trainingsCompleted += 1;
+      break;
+    case 'punctual_checkin':
+      updatedStats.punctualDays += 1;
+      break;
+    case 'feedback_given':
+      updatedStats.feedbackGiven += 1;
+      break;
+  }
+  
+  return updatedStats;
+};
+
+// Helper function to update daily streak
+const updateDailyStreak = (dailyStreak: any, eventType: string, now: string) => {
+  if (eventType !== 'punctual_checkin') return dailyStreak;
+  
+  const today = now.split('T')[0];
+  const lastCheckinDate = dailyStreak.lastCheckin.split('T')[0];
+  
+  if (lastCheckinDate === today) {
+    // Already checked in today
+    return dailyStreak;
+  }
+  
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  
+  if (lastCheckinDate === yesterdayStr) {
+    // Continuing streak
+    const newCurrent = dailyStreak.current + 1;
+    return {
+      current: newCurrent,
+      longest: Math.max(dailyStreak.longest, newCurrent),
+      lastCheckin: now
+    };
+  } else {
+    // Starting new streak
+    return {
+      current: 1,
+      longest: Math.max(dailyStreak.longest, 1),
+      lastCheckin: now
+    };
+  }
+};
+
 export const useAchievementsStore = create<AchievementsState>()(
   persist(
     (set, get) => ({
@@ -140,50 +210,14 @@ export const useAchievementsStore = create<AchievementsState>()(
             }
           };
 
-          // Update quarterly stats based on event type
-          const quarterlyStats = { ...userProgress.quarterlyStats };
-          if (quarterlyStats.quarter !== currentQuarter) {
-            // Reset for new quarter
-            quarterlyStats.quarter = currentQuarter;
-            quarterlyStats.coinsEarned = 0;
-            quarterlyStats.trainingsCompleted = 0;
-            quarterlyStats.punctualDays = 0;
-            quarterlyStats.feedbackGiven = 0;
-          }
-
-          switch (eventType) {
-            case 'training_completed':
-              quarterlyStats.trainingsCompleted += value;
-              break;
-            case 'coins_earned':
-              quarterlyStats.coinsEarned += value;
-              break;
-            case 'punctual_checkin':
-              quarterlyStats.punctualDays += value;
-              // Update daily streak
-              const today = new Date().toISOString().split('T')[0];
-              const lastCheckin = userProgress.dailyStreak.lastCheckin;
-              const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-              
-              if (lastCheckin === yesterday) {
-                userProgress.dailyStreak.current += 1;
-              } else if (lastCheckin !== today) {
-                userProgress.dailyStreak.current = 1;
-              }
-              userProgress.dailyStreak.longest = Math.max(
-                userProgress.dailyStreak.longest,
-                userProgress.dailyStreak.current
-              );
-              userProgress.dailyStreak.lastCheckin = today;
-              break;
-            case 'feedback_given':
-              quarterlyStats.feedbackGiven += value;
-              break;
-          }
+          // Update quarterly stats and daily streak using helpers
+          const quarterlyStats = updateQuarterlyStats(userProgress.quarterlyStats, eventType, value, currentQuarter);
+          const dailyStreak = updateDailyStreak(userProgress.dailyStreak, eventType, now);
 
           const updatedProgress = {
             ...userProgress,
-            quarterlyStats
+            quarterlyStats,
+            dailyStreak
           };
 
           return {

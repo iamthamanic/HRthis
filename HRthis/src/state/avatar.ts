@@ -303,19 +303,19 @@ export const useAvatarStore = create<AvatarState>()(
         return levelUpEvents;
       },
 
-      getXPEvents: (_userId: string, limit = 10) => {
+      getXPEvents: (userId: string, limit = 10) => {
         return get().xpEvents
           .filter(event => event.userId === userId)
           .slice(0, limit);
       },
 
-      getLevelUpEvents: (_userId: string, limit = 5) => {
+      getLevelUpEvents: (userId: string, limit = 5) => {
         return get().levelUpEvents
           .filter(event => event.userId === userId)
           .slice(0, limit);
       },
 
-      getUserStats: (_userId: string) => {
+      getUserStats: (userId: string) => {
         const userAvatar = get().getUserAvatar(userId);
         const xpEvents = get().getXPEvents(userId, 5);
         
@@ -345,7 +345,7 @@ export const useAvatarStore = create<AvatarState>()(
         return Object.values(get().userAvatars);
       },
       
-      getUserSkill: (_userId: string, _skillId: string) => {
+      getUserSkill: (userId: string, skillId: string) => {
         const userAvatar = get().getUserAvatar(userId);
         if (!userAvatar) return undefined;
         return userAvatar.skills.find(skill => skill.id === skillId);
