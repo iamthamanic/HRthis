@@ -59,6 +59,31 @@ interface GamificationState {
   getDefaultSkillForEventType: (_type: string) => string | null;
 }
 
+// Helper function to calculate XP amount based on event type
+const calculateXPAmount = (
+  type: string, 
+  xpAmount: number | undefined, 
+  config: GamificationConfig, 
+  metadata: Record<string, any>
+): number => {
+  if (xpAmount) return xpAmount;
+  
+  switch (type) {
+    case 'training_completed':
+      return config.xpRates.trainingCompleted;
+    case 'punctual_checkin':
+      return config.xpRates.punctualCheckin;
+    case 'coins_earned':
+      return Math.floor((metadata.coinAmount || 0) * config.xpRates.coinsEarned);
+    case 'feedback_given':
+      return config.xpRates.feedbackGiven;
+    case 'daily_login':
+      return config.xpRates.dailyLogin;
+    default:
+      return 0;
+  }
+};
+
 export const useGamificationStore = create<GamificationState>()(
   persist(
     (set, get) => ({
@@ -69,30 +94,7 @@ export const useGamificationStore = create<GamificationState>()(
         const { type, userId, skillIds, xpAmount, metadata = {} } = eventData;
         const config = get().config;
         
-        // Calculate XP amount if not provided
-        let finalXPAmount = xpAmount;
-        if (!finalXPAmount) {
-          switch (type) {
-            case 'training_completed':
-              finalXPAmount = config.xpRates.trainingCompleted;
-              break;
-            case 'punctual_checkin':
-              finalXPAmount = config.xpRates.punctualCheckin;
-              break;
-            case 'coins_earned':
-              finalXPAmount = Math.floor((metadata.coinAmount || 0) * config.xpRates.coinsEarned);
-              break;
-            case 'feedback_given':
-              finalXPAmount = config.xpRates.feedbackGiven;
-              break;
-            case 'daily_login':
-              finalXPAmount = config.xpRates.dailyLogin;
-              break;
-            default:
-              finalXPAmount = 0;
-          }
-        }
-
+        const finalXPAmount = calculateXPAmount(type, xpAmount, config, metadata);
         if (!finalXPAmount || finalXPAmount <= 0) return;
 
         const avatarStore = useAvatarStore.getState();
@@ -246,7 +248,7 @@ export const useGamificationStore = create<GamificationState>()(
       },
 
 
-      updateConfig: (_updates: Partial<GamificationConfig>) => {
+      updateConfig: (updates: Partial<GamificationConfig>) => {
         set(state => ({
           config: { ...state.config, ...updates }
         }));
