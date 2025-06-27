@@ -4,6 +4,8 @@ import { useCoinsStore, type CoinRule } from '../state/coins';
 import { useShopStore, type ShopBenefit } from '../state/shop';
 import { useCoinEventsStore, type CoinEvent } from '../state/coinEvents';
 import { cn } from '../utils/cn';
+import { CoinEventProgress } from '../components/benefits/CoinEventProgress';
+import { BenefitCard } from '../components/benefits/BenefitCard';
 
 /**
  * Main benefits management screen
@@ -36,8 +38,6 @@ export const BenefitsScreen = () => {
   } = useShopStore();
   const {
     getActiveEvents,
-    getUnlockedEvents,
-    getNextEvent,
     addEvent,
     updateEvent,
     deleteEvent,
@@ -466,35 +466,6 @@ export const BenefitsScreen = () => {
     setError('');
   };
 
-  /**
-   * Returns an emoji icon for a given benefit category
-   * @param category - The benefit category
-   * @returns Emoji icon representing the category
-   */
-  const getCategoryIcon = (category: string): string => {
-    switch (category) {
-      case 'WELLNESS': return '💆';
-      case 'FOOD': return '🍽️';
-      case 'TECH': return '💻';
-      case 'TIME_OFF': return '🏖️';
-      default: return '🎁';
-    }
-  };
-
-  /**
-   * Returns the display name for a given benefit category
-   * @param category - The benefit category
-   * @returns Localized category name in German
-   */
-  const getCategoryName = (category: string): string => {
-    switch (category) {
-      case 'WELLNESS': return 'Wellness';
-      case 'FOOD': return 'Essen & Trinken';
-      case 'TECH': return 'Technologie';
-      case 'TIME_OFF': return 'Freizeit';
-      default: return 'Sonstiges';
-    }
-  };
 
   if (!user) return null;
 
@@ -572,66 +543,7 @@ export const BenefitsScreen = () => {
         {activeTab === 'shop' && (
           <div className="space-y-4">
             {/* Coin Events Progress Bar */}
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="mb-3">
-                <h3 className="font-semibold text-lg">🎯 Coin Events</h3>
-                <p className="text-sm opacity-90">Erreiche Meilensteine und erhalte Belohnungen!</p>
-              </div>
-              
-              {(() => {
-                const unlockedEvents = getUnlockedEvents(userBalance);
-                const nextEvent = getNextEvent(userBalance);
-                const allEvents = getActiveEvents();
-                
-                // Show progress towards next milestone if available
-                if (nextEvent) {
-                  const progress = (userBalance / nextEvent.requiredCoins) * 100;
-                  
-                  return (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">{nextEvent.title}</span>
-                        <span className="text-sm">{userBalance} / {nextEvent.requiredCoins} Coins</span>
-                      </div>
-                      <div className="w-full bg-white/20 rounded-full h-3">
-                        <div 
-                          className="bg-white rounded-full h-3 transition-all duration-500 ease-out"
-                          style={{ width: `${Math.min(progress, 100)}%` }}
-                        />
-                      </div>
-                      <p className="text-xs mt-2 opacity-90">Belohnung: {nextEvent.reward}</p>
-                    </div>
-                  );
-                } else if (unlockedEvents.length === allEvents.length && allEvents.length > 0) {
-                  return (
-                    <div className="text-center py-2">
-                      <p className="text-lg font-bold">🏆 Alle Events freigeschaltet!</p>
-                      <p className="text-sm opacity-90">Glückwunsch, du hast alle Meilensteine erreicht!</p>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div className="text-center py-2">
-                      <p className="text-sm opacity-90">Keine aktiven Events verfügbar</p>
-                    </div>
-                  );
-                }
-              })()}
-              
-              {/* Show unlocked events */}
-              {getUnlockedEvents(userBalance).length > 0 && (
-                <div className="mt-4 pt-4 border-t border-white/20">
-                  <p className="text-xs font-semibold mb-2">✅ Freigeschaltet:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {getUnlockedEvents(userBalance).map((event) => (
-                      <span key={event.id} className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                        {event.title}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <CoinEventProgress userBalance={userBalance} />
 
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Benefits</h2>
@@ -773,65 +685,15 @@ export const BenefitsScreen = () => {
             
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {getActiveBenefits().map((benefit) => (
-                <div key={benefit.id} className="bg-white rounded-xl p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center">
-                      <span className="text-2xl mr-3">{getCategoryIcon(benefit.category)}</span>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{benefit.title}</h3>
-                        <p className="text-xs text-gray-500">{getCategoryName(benefit.category)}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-blue-600">{benefit.coinCost}</p>
-                      <p className="text-xs text-gray-500">Coins</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 mb-4">{benefit.description}</p>
-                  
-                  {benefit.stockLimit && (
-                    <p className="text-xs text-gray-500 mb-2">
-                      Noch {benefit.currentStock} von {benefit.stockLimit} verfügbar
-                    </p>
-                  )}
-                  
-                  {/* Admin Controls */}
-                  {isAdmin && (
-                    <div className="flex gap-2 mb-2">
-                      <button
-                        onClick={() => handleEditBenefit(benefit)}
-                        className="flex-1 p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
-                      >
-                        ✏️ Bearbeiten
-                      </button>
-                      <button
-                        onClick={() => handleDeleteBenefit(benefit.id)}
-                        className="flex-1 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-                      >
-                        🗑️ Löschen
-                      </button>
-                    </div>
-                  )}
-                  
-                  <button
-                    onClick={() => handlePurchaseBenefit(benefit.id, benefit.coinCost)}
-                    disabled={userBalance < benefit.coinCost || Boolean(benefit.stockLimit && (!benefit.currentStock || benefit.currentStock === 0))}
-                    className={cn(
-                      "w-full py-2 px-4 rounded-lg font-medium transition-colors",
-                      userBalance >= benefit.coinCost && (!benefit.stockLimit || benefit.currentStock! > 0)
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    )}
-                  >
-                    {benefit.stockLimit && (!benefit.currentStock || benefit.currentStock === 0)
-                      ? 'Ausverkauft'
-                      : userBalance < benefit.coinCost 
-                        ? 'Nicht genug Coins' 
-                        : 'Einlösen'
-                    }
-                  </button>
-                </div>
+                <BenefitCard
+                  key={benefit.id}
+                  benefit={benefit}
+                  userBalance={userBalance}
+                  isAdmin={isAdmin}
+                  onPurchase={handlePurchaseBenefit}
+                  onEdit={handleEditBenefit}
+                  onDelete={handleDeleteBenefit}
+                />
               ))}
             </div>
           </div>

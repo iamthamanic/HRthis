@@ -36,6 +36,11 @@ export type CalendarDay = {
 export type CalendarEvent = CalendarEntry;
 
 /**
+ * Calendar filter modes for UI
+ */
+export type CalendarFilterMode = 'all' | 'leaves' | 'work';
+
+/**
  * Calendar filter options
  */
 export type CalendarFilter = {

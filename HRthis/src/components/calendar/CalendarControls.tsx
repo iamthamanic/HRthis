@@ -1,14 +1,14 @@
 import React from 'react';
-import { CalendarView, CalendarViewMode, CalendarFilter } from '../../types/calendar';
+import { CalendarView, CalendarViewMode, CalendarFilterMode } from '../../types/calendar';
 import { cn } from '../../utils/cn';
 
 interface CalendarControlsProps {
   viewMode: CalendarViewMode;
   calendarView: CalendarView;
-  filterMode: CalendarFilter;
+  filterMode: CalendarFilterMode;
   onViewModeChange: (mode: CalendarViewMode) => void;
   onCalendarViewChange: (view: CalendarView) => void;
-  onFilterModeChange: (filter: CalendarFilter) => void;
+  onFilterModeChange: (filter: CalendarFilterMode) => void;
 }
 
 export const CalendarControls: React.FC<CalendarControlsProps> = ({

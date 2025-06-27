@@ -51,64 +51,69 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
           <div>
             <h3 className="font-semibold text-gray-900">{achievement.name}</h3>
             <p className="text-sm text-gray-600">{achievement.description}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={cn(
-                "text-xs px-2 py-1 rounded-full text-white",
-                `bg-gradient-to-r ${rarityColors[achievement.rarity]}`
-              )}>
-                {rarityLabels[achievement.rarity]}
-              </span>
-              <span className="text-xs text-gray-500">
-                {achievement.xpReward} XP
-              </span>
-            </div>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
-            {stats.unlockedCount} / {stats.totalUsers} erreicht
-          </span>
           <button
             onClick={() => onToggleActive(achievement.id)}
             className={cn(
-              "text-xs px-3 py-1 rounded-full border transition-colors",
-              achievement.isActive 
-                ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-                : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+              "w-8 h-4 rounded-full relative transition-colors",
+              achievement.isActive ? "bg-green-500" : "bg-gray-300"
             )}
           >
-            {achievement.isActive ? 'Aktiv' : 'Inaktiv'}
-          </button>
-          <button
-            onClick={() => onEdit(achievement)}
-            className="text-blue-600 hover:text-blue-800 p-1"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={() => onDelete(achievement.id)}
-            className="text-red-600 hover:text-red-800 p-1"
-          >
-            🗑️
+            <div className={cn(
+              "w-3 h-3 bg-white rounded-full absolute top-0.5 transition-transform",
+              achievement.isActive ? "translate-x-4" : "translate-x-0.5"
+            )} />
           </button>
         </div>
       </div>
-      
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Bedingungen:</h4>
-        <div className="space-y-1">
-          {achievement.conditions.map((condition, index) => (
-            <div key={index} className="text-sm text-gray-600">
-              {condition.type === 'xp_earned' && `${condition.target} XP erreichen`}
-              {condition.type === 'training_completed' && `${condition.target} Schulungen abschließen`}
-              {condition.type === 'punctual_checkins' && `${condition.target} pünktliche Check-ins`}
-              {condition.type === 'coins_earned' && `${condition.target} Coins verdienen`}
-              {condition.type === 'level_reached' && `Level ${condition.target} erreichen`}
-              {condition.type === 'feedback_given' && `${condition.target} Feedback geben`}
-              {condition.type === 'consecutive_days' && `${condition.target} aufeinanderfolgende Tage`}
-            </div>
-          ))}
+
+      <div className="space-y-3 mb-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">Kategorie:</span>
+          <span className="text-sm font-medium">{achievement.category}</span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">Seltenheit:</span>
+          <span className={cn(
+            "text-xs px-2 py-1 rounded-full font-medium",
+            achievement.rarity === 'legendary' ? 'bg-yellow-100 text-yellow-800' :
+            achievement.rarity === 'epic' ? 'bg-purple-100 text-purple-800' :
+            achievement.rarity === 'rare' ? 'bg-blue-100 text-blue-800' :
+            'bg-gray-100 text-gray-800'
+          )}>
+            {rarityLabels[achievement.rarity]}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">XP Belohnung:</span>
+          <span className="text-sm font-medium">{achievement.xpReward} XP</span>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">Freigeschaltet:</span>
+          <span className="text-sm font-medium">{stats.unlockedCount} Benutzer</span>
+        </div>
+      </div>
+
+      <div className="border-t pt-4">
+        <div className="flex gap-2">
+          <button
+            onClick={() => onEdit(achievement)}
+            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"
+          >
+            Bearbeiten
+          </button>
+          <button
+            onClick={() => onDelete(achievement.id)}
+            className="px-3 py-2 border border-red-300 text-red-600 rounded text-sm hover:bg-red-50"
+          >
+            Löschen
+          </button>
         </div>
       </div>
     </div>
@@ -200,16 +205,16 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1"
+            className="text-gray-400 hover:text-gray-600"
           >
-            <X className="w-6 h-6" />
+            <X className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
+        <div className="space-y-6">
+          <div className="grid gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name
               </label>
               <input
@@ -217,12 +222,12 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="z.B. Erster Arbeitstag"
+                placeholder="z.B. Erste Schritte"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Beschreibung
               </label>
               <textarea
@@ -236,7 +241,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Icon
                 </label>
                 <input
@@ -249,7 +254,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   XP Belohnung
                 </label>
                 <input
@@ -264,23 +269,24 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Kategorie
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="milestone">Meilenstein</option>
-                  <option value="skill">Fähigkeit</option>
-                  <option value="social">Sozial</option>
-                  <option value="special">Besonders</option>
+                  <option value="learning">Lernen</option>
+                  <option value="attendance">Anwesenheit</option>
+                  <option value="engagement">Engagement</option>
+                  <option value="milestone">Meilensteine</option>
+                  <option value="special">Spezial</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Seltenheit
                 </label>
                 <select
@@ -296,7 +302,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="space-y-2">
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -304,8 +310,9 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
                   className="mr-2"
                 />
-                Aktiv
+                <span className="text-sm text-gray-700">Aktiv</span>
               </label>
+              
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -313,23 +320,24 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, isHidden: e.target.checked }))}
                   className="mr-2"
                 />
-                Versteckt
+                <span className="text-sm text-gray-700">Versteckt (nicht in der Galerie anzeigen)</span>
               </label>
             </div>
           </div>
 
+          {/* Right Column - Conditions */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Bedingungen</h3>
               <button
                 onClick={addCondition}
-                className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700"
+                className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
               >
                 + Bedingung
               </button>
             </div>
 
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="space-y-4">
               {formData.conditions.map((condition, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -413,19 +421,20 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
         </div>
 
         <div className="flex gap-3 mt-6 pt-6 border-t">
-          <button
-            onClick={handleSave}
-            disabled={!formData.name || !formData.description}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-          >
-            {achievement ? 'Speichern' : 'Erstellen'}
-          </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Abbrechen
-          </button>
+            <button
+              onClick={handleSave}
+              disabled={!formData.name || !formData.description}
+              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {achievement ? 'Speichern' : 'Erstellen'}
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Abbrechen
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -444,102 +453,166 @@ export const AchievementAdminScreen: React.FC = () => {
   const [editingAchievement, setEditingAchievement] = useState<Achievement | undefined>();
 
   const achievements = getAchievements();
-
+  
   const filteredAchievements = achievements.filter(achievement => {
     const matchesCategory = selectedCategory === 'all' || achievement.category === selectedCategory;
     const matchesSearch = achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          achievement.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
     return matchesCategory && matchesSearch;
   });
 
-  const handleEdit = (achievement: Achievement) => {
+  const categories = [
+    { id: 'all', name: 'Alle', icon: '🏆' },
+    { id: 'learning', name: 'Lernen', icon: '🎓' },
+    { id: 'attendance', name: 'Anwesenheit', icon: '⏰' },
+    { id: 'engagement', name: 'Engagement', icon: '💪' },
+    { id: 'milestone', name: 'Meilensteine', icon: '🎯' },
+    { id: 'special', name: 'Spezial', icon: '⭐' }
+  ];
+
+  const handleCreateAchievement = () => {
+    setEditingAchievement(undefined);
+    setShowModal(true);
+  };
+
+  const handleEditAchievement = (achievement: Achievement) => {
     setEditingAchievement(achievement);
     setShowModal(true);
   };
 
-  const handleDelete = (achievementId: string) => {
-    if (window.confirm('Achievement wirklich löschen?')) {
-      deleteAchievement(achievementId);
-    }
-  };
-
-  const handleSave = (achievement: Achievement) => {
+  const handleSaveAchievement = (achievement: Achievement) => {
     if (editingAchievement) {
-      updateAchievement(achievement);
+      updateAchievement(achievement.id, achievement);
     } else {
       createAchievement(achievement);
     }
-    setShowModal(false);
-    setEditingAchievement(undefined);
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingAchievement(undefined);
+  const handleDeleteAchievement = (_achievementId: string) => {
+    if (confirm('Möchtest du dieses Achievement wirklich löschen?')) {
+      deleteAchievement(_achievementId);
+    }
   };
+
+  const handleToggleActive = (_achievementId: string) => {
+    toggleAchievementActive(_achievementId);
+  };
+
+  // Statistics
+  const totalAchievements = achievements.length;
+  const activeAchievements = achievements.filter(a => a.isActive).length;
+  const categoryStats = categories.slice(1).map(category => ({
+    ...category,
+    count: achievements.filter(a => a.category === category.id).length
+  }));
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Achievement Verwaltung</h1>
-          <p className="text-gray-600">Verwalte Achievements und Belohnungen</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            🏆 Achievement Management
+          </h1>
+          <p className="text-gray-600">
+            Erstelle und verwalte Achievements für das Gamification-System
+          </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-        >
-          + Neues Achievement
-        </button>
-      </div>
 
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Achievements durchsuchen..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+        {/* Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="text-2xl font-bold text-blue-600 mb-2">{totalAchievements}</div>
+            <div className="text-sm text-gray-600">Gesamt Achievements</div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="text-2xl font-bold text-green-600 mb-2">{activeAchievements}</div>
+            <div className="text-sm text-gray-600">Aktive Achievements</div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="text-2xl font-bold text-purple-600 mb-2">
+              {achievements.filter(a => a.rarity === 'legendary').length}
+            </div>
+            <div className="text-sm text-gray-600">Legendäre Achievements</div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="text-2xl font-bold text-orange-600 mb-2">
+              {achievements.reduce((sum, a) => sum + a.xpReward, 0)}
+            </div>
+            <div className="text-sm text-gray-600">Gesamt XP Belohnungen</div>
+          </div>
         </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="all">Alle Kategorien</option>
-          <option value="milestone">Meilenstein</option>
-          <option value="skill">Fähigkeit</option>
-          <option value="social">Sozial</option>
-          <option value="special">Besonders</option>
-        </select>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredAchievements.map(achievement => (
-          <AchievementCard
-            key={achievement.id}
-            achievement={achievement}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onToggleActive={toggleAchievementActive}
-          />
-        ))}
-      </div>
-
-      {filteredAchievements.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Keine Achievements gefunden.</p>
+        {/* Controls */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex gap-4">
+            <input
+              type="text"
+              placeholder="Achievements suchen..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.icon} {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <button
+            onClick={handleCreateAchievement}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Neues Achievement
+          </button>
         </div>
-      )}
 
-      <AchievementModal
-        achievement={editingAchievement}
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        onSave={handleSave}
-      />
+        {/* Achievements Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredAchievements.map(achievement => (
+            <AchievementCard
+              key={achievement.id}
+              achievement={achievement}
+              onEdit={handleEditAchievement}
+              onDelete={handleDeleteAchievement}
+              onToggleActive={handleToggleActive}
+            />
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredAchievements.length === 0 && (
+          <div className="text-center py-12">
+            <span className="text-6xl mb-4 block">🏆</span>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Keine Achievements gefunden
+            </h3>
+            <p className="text-gray-600">
+              Erstelle dein erstes Achievement oder ändere deine Suchkriterien
+            </p>
+          </div>
+        )}
+
+        {/* Achievement Modal */}
+        <AchievementModal
+          achievement={editingAchievement}
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onSave={handleSaveAchievement}
+        />
+      </div>
     </div>
   );
 };

@@ -1,11 +1,11 @@
 import React from 'react';
-import { CalendarDay, CalendarEvent, CalendarFilter } from '../../types/calendar';
+import { CalendarDay, CalendarEvent, CalendarFilterMode } from '../../types/calendar';
 import { cn } from '../../utils/cn';
 
 interface CalendarGridProps {
   calendarDays: CalendarDay[];
   events: CalendarEvent[];
-  filterMode: CalendarFilter;
+  filterMode: CalendarFilterMode;
   onDayClick: (day: CalendarDay) => void;
 }
 
