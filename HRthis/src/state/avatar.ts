@@ -351,7 +351,7 @@ export const useAvatarStore = create<AvatarState>()(
         return userAvatar.skills.find(skill => skill.id === skillId);
       },
       
-      updateTitle: (_userId: string, _title: string) => {
+      updateTitle: (userId: string, title: string) => {
         set(state => {
           const userAvatar = state.userAvatars[userId];
           if (!userAvatar) return state;
@@ -369,7 +369,7 @@ export const useAvatarStore = create<AvatarState>()(
         });
       },
       
-      updateAvatar: (_userId: string, _avatarConfig: Partial<UserAvatar>) => {
+      updateAvatar: (userId: string, avatarConfig: Partial<UserAvatar>) => {
         set(state => {
           const userAvatar = state.userAvatars[userId];
           if (!userAvatar) return state;

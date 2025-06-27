@@ -148,7 +148,7 @@ export const useGamificationStore = create<GamificationState>()(
         });
       },
       
-      getXPDescription: (_type: string, metadata: Record<string, any>) => {
+      getXPDescription: (type: string, metadata: Record<string, any>) => {
         switch (type) {
           case 'training_completed':
             return `Schulung abgeschlossen`;
@@ -169,7 +169,7 @@ export const useGamificationStore = create<GamificationState>()(
         }
       },
       
-      getDefaultSkillForEventType: (_type: string) => {
+      getDefaultSkillForEventType: (type: string) => {
         switch (type) {
           case 'training_completed':
           case 'training_passed':
@@ -185,7 +185,7 @@ export const useGamificationStore = create<GamificationState>()(
         }
       },
 
-      awardCoins: (_userId: string, _amount: number, _reason: string) => {
+      awardCoins: (userId: string, amount: number, reason: string) => {
         // This would integrate with the existing coins store
         // For now, we just track it for XP purposes
         get().awardXP({
@@ -195,7 +195,7 @@ export const useGamificationStore = create<GamificationState>()(
         });
       },
 
-      onTrainingCompleted: (_userId: string, _trainingId: string, _passed: boolean) => {
+      onTrainingCompleted: (userId: string, trainingId: string, passed: boolean) => {
         if (!passed) return;
         
         get().awardXP({
@@ -206,7 +206,7 @@ export const useGamificationStore = create<GamificationState>()(
         });
       },
 
-      onPunctualCheckin: (_userId: string, streakDay = 1) => {
+      onPunctualCheckin: (userId: string, streakDay = 1) => {
         get().awardXP({
           type: 'punctual_checkin',
           userId,
@@ -215,7 +215,7 @@ export const useGamificationStore = create<GamificationState>()(
         });
       },
 
-      onCoinsEarned: (_userId: string, _amount: number, _reason: string) => {
+      onCoinsEarned: (userId: string, amount: number, reason: string) => {
         get().awardXP({
           type: 'coins_earned',
           userId,
@@ -224,7 +224,7 @@ export const useGamificationStore = create<GamificationState>()(
         });
       },
 
-      onFeedbackGiven: (_userId: string, _feedbackId: string) => {
+      onFeedbackGiven: (userId: string, feedbackId: string) => {
         get().awardXP({
           type: 'feedback_given',
           userId,
@@ -233,7 +233,7 @@ export const useGamificationStore = create<GamificationState>()(
         });
       },
 
-      onDailyLogin: (_userId: string) => {
+      onDailyLogin: (userId: string) => {
         const today = new Date().toISOString().split('T')[0];
         const lastLogin = localStorage.getItem(`lastLogin-${userId}`);
         
