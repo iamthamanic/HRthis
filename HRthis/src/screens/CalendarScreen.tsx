@@ -6,20 +6,9 @@ import { useTimeRecordsStore } from '../state/timeRecords';
 import { useRemindersStore } from '../state/reminders';
 import { LeaveRequest, TimeRecord } from '../types';
 import { VacationReminder } from '../types/reminders';
+import { CalendarDay } from '../types/calendar';
 import { YearView } from '../components/YearView';
 import { cn } from '../utils/cn';
-
-interface CalendarDay {
-  date: Date;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  isWeekend: boolean;
-  leaves: LeaveRequest[];
-  timeRecords: TimeRecord[];
-  reminders: VacationReminder[];
-  userLeaves: LeaveRequest[]; // Own leaves for personal view
-  userTimeRecord: TimeRecord | null; // Own time record
-}
 
 interface CalendarEvent {
   id: string;
@@ -230,14 +219,14 @@ export const CalendarScreen = () => {
         
         days.push({
           date,
-          isCurrentMonth,
+          entries: [], // CalendarEntry[] - we'll populate this if needed
           isToday,
           isWeekend,
-          leaves: dayLeaves,
-          timeRecords: dayTimeRecords,
-          reminders: dayReminders,
+          isCurrentMonth,
           userLeaves,
-          userTimeRecord
+          userTimeRecord,
+          leaves: dayLeaves,
+          reminders: dayReminders
         });
       }
       
@@ -389,7 +378,8 @@ export const CalendarScreen = () => {
    * Renders day content based on view mode and filters
    */
   const renderDayContent = (day: CalendarDay) => {
-    const events = generateCalendarEvents().filter(event => event.date === day.date.toISOString().split('T')[0]);
+    const dayDateString = day.date instanceof Date ? day.date.toISOString().split('T')[0] : day.date;
+    const events = generateCalendarEvents().filter(event => event.date === dayDateString);
     
     // Apply filter
     const filteredEvents = events.filter(event => {
@@ -408,7 +398,7 @@ export const CalendarScreen = () => {
           day.isToday && "text-blue-600 font-bold",
           day.isWeekend && day.isCurrentMonth && "text-gray-600"
         )}>
-          {day.date.getDate()}
+          {day.date instanceof Date ? day.date.getDate() : new Date(day.date).getDate()}
         </span>
         
         {/* Events */}
@@ -432,7 +422,7 @@ export const CalendarScreen = () => {
         {/* Weekend indicator */}
         {day.isWeekend && day.isCurrentMonth && (
           <div className="text-xs text-gray-400 mt-auto">
-            {day.date.getDay() === 6 ? 'SA' : 'SO'}
+            {(day.date instanceof Date ? day.date.getDay() : new Date(day.date).getDay()) === 6 ? 'SA' : 'SO'}
           </div>
         )}
       </div>
@@ -714,7 +704,7 @@ export const CalendarScreen = () => {
           <div className="bg-white rounded-xl p-6 max-w-md w-full max-h-96 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">
-                {selectedDay.date.toLocaleDateString('de-DE', { 
+                {(selectedDay.date instanceof Date ? selectedDay.date : new Date(selectedDay.date)).toLocaleDateString('de-DE', { 
                   weekday: 'long',
                   day: 'numeric',
                   month: 'long',
@@ -731,7 +721,7 @@ export const CalendarScreen = () => {
             
             <div className="space-y-3">
               {/* User's events */}
-              {selectedDay.userLeaves.map(leave => (
+              {selectedDay.userLeaves?.map(leave => (
                 <div key={leave.id} className="p-3 bg-blue-50 rounded-lg">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">
@@ -770,7 +760,7 @@ export const CalendarScreen = () => {
               )}
               
               {/* Team events (if team view) */}
-              {viewMode === 'team' && selectedDay.leaves.map(leave => (
+              {viewMode === 'team' && selectedDay.leaves?.map(leave => (
                 <div key={leave.id} className="p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">
@@ -789,9 +779,9 @@ export const CalendarScreen = () => {
               ))}
               
               {/* No events */}
-              {selectedDay.userLeaves.length === 0 && 
+              {(selectedDay.userLeaves?.length || 0) === 0 && 
                !selectedDay.userTimeRecord && 
-               selectedDay.leaves.length === 0 && (
+               (selectedDay.leaves?.length || 0) === 0 && (
                 <p className="text-gray-500 text-center py-4">
                   Keine Ereignisse an diesem Tag
                 </p>

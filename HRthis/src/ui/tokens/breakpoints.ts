@@ -3,22 +3,29 @@
  * Mobile-First Approach für deine App
  */
 
+// Shared constants to avoid duplication
+const WIDTH_640 = '640px';
+const WIDTH_768 = '768px';
+const WIDTH_1024 = '1024px';
+const WIDTH_1280 = '1280px';
+const WIDTH_1536 = '1536px';
+
 export const breakpoints = {
   // Mobile First Breakpoints
-  sm: '640px',      // Small tablets, large phones
-  md: '768px',      // Tablets
-  lg: '1024px',     // Laptops, small desktops
-  xl: '1280px',     // Large desktops
-  '2xl': '1536px',  // Extra large screens
+  sm: WIDTH_640,      // Small tablets, large phones
+  md: WIDTH_768,      // Tablets
+  lg: WIDTH_1024,     // Laptops, small desktops
+  xl: WIDTH_1280,     // Large desktops
+  '2xl': WIDTH_1536,  // Extra large screens
 } as const;
 
 // Container Max-Widths für verschiedene Breakpoints
 export const containerMaxWidth = {
-  sm: '640px',
-  md: '768px', 
-  lg: '1024px',
-  xl: '1280px',     // Wie deine max-w-7xl
-  '2xl': '1536px',
+  sm: WIDTH_640,
+  md: WIDTH_768, 
+  lg: WIDTH_1024,
+  xl: WIDTH_1280,     // Wie deine max-w-7xl
+  '2xl': WIDTH_1536,
 } as const;
 
 // Grid System Configuration

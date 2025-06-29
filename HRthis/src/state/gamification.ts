@@ -103,24 +103,24 @@ export const useGamificationStore = create<GamificationState>()(
         // Award XP to specific skills or general
         if (skillIds && skillIds.length > 0) {
           skillIds.forEach(skillId => {
-            avatarStore.addXP(
+            avatarStore.addXP({
               userId,
               skillId,
-              finalXPAmount!,
-              get().getXPDescription(type, metadata),
-              { type, ...metadata }
-            );
+              xpAmount: finalXPAmount!,
+              description: get().getXPDescription(type, metadata),
+              metadata: { type, ...metadata }
+            });
           });
         } else {
           // Award to default skill based on type
           const defaultSkillId = get().getDefaultSkillForEventType(type);
-          avatarStore.addXP(
+          avatarStore.addXP({
             userId,
-            defaultSkillId,
-            finalXPAmount!,
-            get().getXPDescription(type, metadata),
-            { type, ...metadata }
-          );
+            skillId: defaultSkillId,
+            xpAmount: finalXPAmount!,
+            description: get().getXPDescription(type, metadata),
+            metadata: { type, ...metadata }
+          });
         }
 
         // Update achievement progress

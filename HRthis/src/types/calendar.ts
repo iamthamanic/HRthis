@@ -8,6 +8,8 @@ export type CalendarEntry = {
   type: "urlaub" | "krank" | "meeting" | "fortbildung" | "ux" | "zeit";
   stunden?: number; // nur bei Arbeitszeiteinträgen
   status?: "beantragt" | "genehmigt" | "abgelehnt";
+  title?: string;
+  color?: string;
 };
 
 /**
@@ -24,10 +26,15 @@ export type CalendarView = CalendarViewMode;
  * Calendar day representation
  */
 export type CalendarDay = {
-  date: string;
+  date: Date | string;
   entries: CalendarEntry[];
   isToday: boolean;
   isWeekend: boolean;
+  isCurrentMonth?: boolean;
+  userLeaves?: any[];
+  userTimeRecord?: any;
+  leaves?: any[];
+  reminders?: any[];
 };
 
 /**
@@ -39,6 +46,16 @@ export type CalendarEvent = CalendarEntry;
  * Calendar filter modes for UI
  */
 export type CalendarFilterMode = 'all' | 'leaves' | 'work';
+
+/**
+ * Vacation statistics
+ */
+export type VacationStats = {
+  totalDays: number;
+  usedDays: number;
+  remainingDays: number;
+  pendingDays: number;
+};
 
 /**
  * Calendar filter options

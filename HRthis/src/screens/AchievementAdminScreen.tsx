@@ -465,7 +465,7 @@ export const AchievementAdminScreen: React.FC = () => {
 
   const handleSave = (achievement: Achievement) => {
     if (editingAchievement) {
-      updateAchievement(achievement);
+      updateAchievement(achievement.id, achievement);
     } else {
       createAchievement(achievement);
     }

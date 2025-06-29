@@ -59,14 +59,11 @@ export const useCalendarData = (viewMode: CalendarViewMode, currentDate: Date) =
         
         for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
           events.push({
-            id: `${leave.id}-${date.toISOString().split('T')[0]}`,
-            title: viewMode === 'team' ? 
-              `${getUserName(leave.userId)} - ${leave.type === 'VACATION' ? 'Urlaub' : 'Krank'}` :
-              leave.type === 'VACATION' ? 'Urlaub' : 'Krank',
-            date: date.toISOString().split('T')[0],
-            type: leave.type === 'VACATION' ? 'vacation' : 'sick',
             userId: leave.userId,
-            color: leave.type === 'VACATION' ? 'bg-blue-500' : 'bg-red-500'
+            userName: getUserName(leave.userId),
+            date: date.toISOString().split('T')[0],
+            type: leave.type === 'VACATION' ? 'urlaub' : 'krank',
+            status: 'genehmigt'
           });
         }
       });
@@ -77,12 +74,11 @@ export const useCalendarData = (viewMode: CalendarViewMode, currentDate: Date) =
       timeRecords.forEach(record => {
         if (record.timeOut) {
           events.push({
-            id: `time-${record.id}`,
-            title: `${record.totalHours.toFixed(1)}h gearbeitet`,
+            userId: user.id,
+            userName: getUserName(user.id),
             date: record.date,
-            type: 'work',
-            color: record.totalHours >= 8 ? 'bg-green-500' : 
-                   record.totalHours >= 6 ? 'bg-yellow-500' : 'bg-red-500'
+            type: 'zeit',
+            stunden: record.totalHours
           });
         }
       });
@@ -98,11 +94,11 @@ export const useCalendarData = (viewMode: CalendarViewMode, currentDate: Date) =
       })
       .forEach(reminder => {
         events.push({
-          id: `reminder-${reminder.id}`,
-          title: reminder.message,
+          userId: reminder.userId,
+          userName: getUserName(reminder.userId),
           date: reminder.reminderDate,
-          type: 'reminder',
-          color: 'bg-orange-500'
+          type: 'meeting', // Using 'meeting' as closest equivalent
+          title: reminder.message
         });
       });
 
@@ -110,7 +106,7 @@ export const useCalendarData = (viewMode: CalendarViewMode, currentDate: Date) =
   };
 
   const getVacationStats = (): VacationStats => {
-    if (!user) return { total: 0, used: 0, remaining: 0 };
+    if (!user) return { totalDays: 0, usedDays: 0, remainingDays: 0, pendingDays: 0 };
     
     const currentYear = new Date().getFullYear();
     const approvedVacations = allLeaves.filter(leave =>
@@ -130,9 +126,10 @@ export const useCalendarData = (viewMode: CalendarViewMode, currentDate: Date) =
     const totalDays = user.vacationDays || 30;
     
     return {
-      total: totalDays,
-      used: usedDays,
-      remaining: Math.max(0, totalDays - usedDays)
+      totalDays: totalDays,
+      usedDays: usedDays,
+      remainingDays: Math.max(0, totalDays - usedDays),
+      pendingDays: 0 // TODO: Calculate pending days from requests with status 'PENDING'
     };
   };
 
@@ -244,14 +241,14 @@ export const useCalendarData = (viewMode: CalendarViewMode, currentDate: Date) =
         
         days.push({
           date,
-          isCurrentMonth,
+          entries: [], // CalendarEntry[] - populate if needed
           isToday,
           isWeekend,
-          leaves: dayLeaves,
-          timeRecords: dayTimeRecords,
-          reminders: dayReminders,
+          isCurrentMonth,
           userLeaves,
-          userTimeRecord
+          userTimeRecord,
+          leaves: dayLeaves,
+          reminders: dayReminders
         });
       }
       

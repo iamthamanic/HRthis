@@ -9,6 +9,18 @@ import {
 } from '../types/gamification';
 import { useAvatarStore } from './avatar';
 import { useNotificationsStore } from './notifications';
+import { 
+  checkAchievementCondition, 
+  createAchievementFromPredefined, 
+  mapUserAchievement,
+  getUnlockedAchievementIds
+} from './achievements-helpers';
+import {
+  createDefaultUserProgress,
+  getCurrentQuarter,
+  updateQuarterlyStats,
+  updateDailyStreak
+} from './achievement-store-helpers';
 
 interface AchievementsState {
   // Achievement system data
@@ -42,7 +54,7 @@ interface AchievementsState {
   // Additional methods
   createAchievement: (achievement: Achievement) => void;
   toggleAchievementActive: (_achievementId: string) => void;
-  getAchievementStats: (_achievementId: string) => { unlockedCount: number };
+  getAchievementStats: (_achievementId: string) => { unlockedCount: number; totalUsers: number };
   checkCondition: (_userId: string, condition: AchievementCondition, userProgress: ProgressTracker) => boolean;
   getTotalTrainingsCompleted: (_userId: string) => number;
   getTotalPunctualDays: (_userId: string) => number;
@@ -50,99 +62,11 @@ interface AchievementsState {
   getTotalFeedbackGiven: (_userId: string) => number;
 }
 
-// Helper function to update quarterly stats
-const updateQuarterlyStats = (
-  quarterlyStats: any, 
-  eventType: string, 
-  value: number, 
-  currentQuarter: string
-) => {
-  const updatedStats = { ...quarterlyStats };
-  
-  if (updatedStats.quarter !== currentQuarter) {
-    // Reset for new quarter
-    updatedStats.quarter = currentQuarter;
-    updatedStats.coinsEarned = 0;
-    updatedStats.trainingsCompleted = 0;
-    updatedStats.punctualDays = 0;
-    updatedStats.feedbackGiven = 0;
-  }
-
-  switch (eventType) {
-    case 'coins_earned':
-      updatedStats.coinsEarned += value;
-      break;
-    case 'training_completed':
-      updatedStats.trainingsCompleted += 1;
-      break;
-    case 'punctual_checkin':
-      updatedStats.punctualDays += 1;
-      break;
-    case 'feedback_given':
-      updatedStats.feedbackGiven += 1;
-      break;
-  }
-  
-  return updatedStats;
-};
-
-// Helper function to update daily streak
-const updateDailyStreak = (dailyStreak: any, eventType: string, now: string) => {
-  if (eventType !== 'punctual_checkin') return dailyStreak;
-  
-  const today = now.split('T')[0];
-  const lastCheckinDate = dailyStreak.lastCheckin.split('T')[0];
-  
-  if (lastCheckinDate === today) {
-    // Already checked in today
-    return dailyStreak;
-  }
-  
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-  
-  if (lastCheckinDate === yesterdayStr) {
-    // Continuing streak
-    const newCurrent = dailyStreak.current + 1;
-    return {
-      current: newCurrent,
-      longest: Math.max(dailyStreak.longest, newCurrent),
-      lastCheckin: now
-    };
-  } else {
-    // Starting new streak
-    return {
-      current: 1,
-      longest: Math.max(dailyStreak.longest, 1),
-      lastCheckin: now
-    };
-  }
-};
 
 export const useAchievementsStore = create<AchievementsState>()(
   persist(
     (set, get) => ({
-      achievements: PREDEFINED_ACHIEVEMENTS.map((achievement, index) => ({
-        id: `predefined-${index}`,
-        name: achievement.name,
-        description: achievement.description,
-        icon: achievement.icon,
-        category: achievement.category,
-        rarity: achievement.rarity,
-        conditions: achievement.conditions.map(c => ({
-          type: c.type as any,
-          target: c.target,
-          operator: c.operator as any,
-          timeframe: c.timeframe
-        })),
-        xpReward: achievement.rewards ? (achievement.rewards as unknown as any[]).find((r: any) => r.type === 'xp')?.value as number || 50 : 50,
-        rewards: achievement.rewards ? [...achievement.rewards] : undefined,
-        isActive: true,
-        isHidden: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })),
+      achievements: PREDEFINED_ACHIEVEMENTS.map(createAchievementFromPredefined),
       userProgress: {},
 
       getAchievements: () => get().achievements,
@@ -154,39 +78,24 @@ export const useAchievementsStore = create<AchievementsState>()(
         
         if (!userAvatar?.achievements) return [];
         
-        // Map user achievement IDs to full achievement objects
         return userAvatar.achievements.map(ua => {
           const achievement = achievements.find(a => a.id === ua.achievementId);
           if (!achievement) return null;
-          
-          return {
-            id: `${userId}-${ua.achievementId}`,
-            userId,
-            achievementId: ua.achievementId,
-            progress: 100,
-            unlockedAt: ua.unlockedAt,
-            notified: ua.isNew !== true,
-            name: achievement.name,
-            description: achievement.description,
-            icon: achievement.icon,
-            rarity: achievement.rarity
-          };
+          return mapUserAchievement(ua, achievement, userId);
         }).filter(Boolean) as UserAchievement[];
       },
 
       getUnlockedAchievements: (userId: string) => {
         const userAchievements = get().getUserAchievements(userId);
         const allAchievements = get().achievements;
-        
-        const unlockedIds = userAchievements.map(ua => ua.achievementId);
+        const unlockedIds = getUnlockedAchievementIds(userAchievements);
         return allAchievements.filter(achievement => unlockedIds.includes(achievement.id));
       },
 
       getLockedAchievements: (userId: string) => {
         const userAchievements = get().getUserAchievements(userId);
         const allAchievements = get().achievements;
-        
-        const unlockedIds = userAchievements.map(ua => ua.achievementId);
+        const unlockedIds = getUnlockedAchievementIds(userAchievements);
         return allAchievements.filter(achievement => 
           !unlockedIds.includes(achievement.id) && achievement.isActive && !achievement.isHidden
         );
@@ -194,21 +103,11 @@ export const useAchievementsStore = create<AchievementsState>()(
 
       updateProgress: (userId: string, eventType: string, value: number, metadata = {}) => {
         const now = new Date().toISOString();
-        const currentQuarter = `${new Date().getFullYear()}-Q${Math.ceil((new Date().getMonth() + 1) / 3)}`;
+        const currentQuarter = getCurrentQuarter();
         
         set(state => {
-          const userProgress = state.userProgress[userId] || {
-            userId,
-            achievements: {},
-            dailyStreak: { current: 0, longest: 0, lastCheckin: '' },
-            quarterlyStats: {
-              quarter: currentQuarter,
-              coinsEarned: 0,
-              trainingsCompleted: 0,
-              punctualDays: 0,
-              feedbackGiven: 0
-            }
-          };
+          const userProgress = state.userProgress[userId] || 
+            createDefaultUserProgress(userId, currentQuarter);
 
           // Update quarterly stats and daily streak using helpers
           const quarterlyStats = updateQuarterlyStats(userProgress.quarterlyStats, eventType, value, currentQuarter);
@@ -280,21 +179,21 @@ export const useAchievementsStore = create<AchievementsState>()(
               achievement.rewards.forEach(reward => {
                 switch (reward.type) {
                   case 'xp':
-                    avatarStore.addXP(
+                    avatarStore.addXP({
                       userId, 
-                      null, 
-                      Number(reward.value), 
-                      `Achievement: ${achievement.name}`
-                    );
+                      skillId: null, 
+                      xpAmount: Number(reward.value), 
+                      description: `Achievement: ${achievement.name}`
+                    });
                     break;
                   case 'skill_xp':
                     if (reward.skillId) {
-                      avatarStore.addXP(
+                      avatarStore.addXP({
                         userId,
-                        reward.skillId,
-                        Number(reward.value),
-                        `Achievement: ${achievement.name}`
-                      );
+                        skillId: reward.skillId,
+                        xpAmount: Number(reward.value),
+                        description: `Achievement: ${achievement.name}`
+                      });
                     }
                     break;
                   case 'coins':
@@ -423,65 +322,14 @@ export const useAchievementsStore = create<AchievementsState>()(
           }
         });
         
-        return { unlockedCount };
+        return { 
+          unlockedCount, 
+          totalUsers: allUserAvatars.length 
+        };
       },
       
       checkCondition: (userId: string, condition: AchievementCondition, userProgress: ProgressTracker) => {
-        let currentValue = 0;
-        
-        switch (condition.type) {
-          case 'xp_earned':
-            const avatarStore = useAvatarStore.getState();
-            const userAvatar = avatarStore.getUserAvatar(userId);
-            currentValue = userAvatar?.totalXP || 0;
-            break;
-          case 'training_completed':
-          case 'trainings_completed':
-            currentValue = condition.timeframe === 'quarterly' 
-              ? userProgress.quarterlyStats.trainingsCompleted
-              : get().getTotalTrainingsCompleted(userId);
-            break;
-          case 'days_punctual':
-          case 'punctual_checkins':
-            currentValue = condition.timeframe === 'quarterly'
-              ? userProgress.quarterlyStats.punctualDays
-              : get().getTotalPunctualDays(userId);
-            break;
-          case 'coins_earned':
-            currentValue = condition.timeframe === 'quarterly'
-              ? userProgress.quarterlyStats.coinsEarned
-              : get().getTotalCoinsEarned(userId);
-            break;
-          case 'feedback_given':
-            currentValue = condition.timeframe === 'quarterly'
-              ? userProgress.quarterlyStats.feedbackGiven
-              : get().getTotalFeedbackGiven(userId);
-            break;
-          case 'level_reached':
-            const avatar = useAvatarStore.getState().getUserAvatar(userId);
-            currentValue = avatar?.level || 1;
-            break;
-          case 'consecutive_days':
-            currentValue = userProgress.dailyStreak.current;
-            break;
-        }
-
-        // Check condition
-        switch (condition.operator) {
-          case 'equals':
-          case 'eq':
-            return currentValue === condition.target;
-          case 'gte':
-            return currentValue >= condition.target;
-          case 'gt':
-            return currentValue > condition.target;
-          case 'lte':
-            return currentValue <= condition.target;
-          case 'lt':
-            return currentValue < condition.target;
-          default:
-            return false;
-        }
+        return checkAchievementCondition(userId, condition, userProgress);
       }
     }),
     {

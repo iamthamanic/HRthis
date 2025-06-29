@@ -2,6 +2,55 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, Organization } from '../types';
 
+// Helper to create basic user fields
+const createBasicUserFields = (userData: Partial<User>) => ({
+  id: `user-${Date.now()}`,
+  email: userData.email || '',
+  name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+  role: userData.role || 'EMPLOYEE',
+  organizationId: userData.organizationId || 'org1',
+  firstName: userData.firstName || '',
+  lastName: userData.lastName || ''
+});
+
+// Helper to create employment fields
+const createEmploymentFields = (userData: Partial<User>) => ({
+  position: userData.position || '',
+  department: userData.department || '',
+  weeklyHours: userData.weeklyHours || 40,
+  employmentType: userData.employmentType || 'FULL_TIME',
+  joinDate: userData.joinDate || new Date().toISOString().split('T')[0],
+  employmentStatus: 'ACTIVE' as const,
+  vacationDays: userData.vacationDays || 30
+});
+
+// Helper to create gamification fields
+const createGamificationFields = () => ({
+  coinWallet: 0,
+  coinProgress: 0,
+  level: 1
+});
+
+// Helper to create team fields
+const createTeamFields = (userData: Partial<User>) => ({
+  teamIds: userData.teamIds || [],
+  primaryTeamId: userData.primaryTeamId
+});
+
+// Helper function to create new user with defaults
+const createUserWithDefaults = (userData: Partial<User>): User => {
+  return {
+    ...createBasicUserFields(userData),
+    ...createEmploymentFields(userData),
+    ...createGamificationFields(),
+    ...createTeamFields(userData),
+    ...userData
+  };
+};
+
+// Helper function to simulate API delay
+const simulateApiCall = () => new Promise(resolve => setTimeout(resolve, 500));
+
 interface AuthState {
   user: User | null;
   organization: Organization | null;
@@ -12,6 +61,7 @@ interface AuthState {
   setUser: (user: User) => void;
   setOrganization: (org: Organization) => void;
   updateUser: (userId: string, updates: Partial<User>) => Promise<void>;
+  createUser: (userData: Partial<User>) => Promise<User>;
   getAllUsers: () => User[];
 }
 
@@ -207,6 +257,23 @@ export const useAuthStore = create<AuthState>()(
           }
           
           set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      createUser: async (userData: Partial<User>) => {
+        set({ isLoading: true });
+        
+        try {
+          await simulateApiCall();
+          
+          const newUser = createUserWithDefaults(userData);
+          mockUsers.push(newUser);
+          
+          set({ isLoading: false });
+          return newUser;
         } catch (error) {
           set({ isLoading: false });
           throw error;

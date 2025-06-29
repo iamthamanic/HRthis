@@ -29,6 +29,10 @@ interface RemindersState {
   getUpcomingVacationAlerts: (managerId: string, days?: number) => ReminderNotification[];
 }
 
+// Constants
+const DEFAULT_VACATION_MESSAGE = 'Max Mustermann ist vom 23.12.2024 bis 30.12.2024 im Weihnachtsurlaub.';
+const CREATED_DATE = '2024-12-01T10:00:00Z';
+
 // Mock data
 const mockReminderSettings: ReminderSettings[] = [
   {
@@ -53,8 +57,8 @@ const mockReminders: VacationReminder[] = [
     daysBeforeVacation: 14,
     isActive: true,
     isSent: false,
-    message: 'Max Mustermann ist vom 23.12.2024 bis 30.12.2024 im Weihnachtsurlaub.',
-    createdAt: '2024-12-01T10:00:00Z',
+    message: DEFAULT_VACATION_MESSAGE,
+    createdAt: CREATED_DATE,
     createdBy: '2'
   },
   {
@@ -66,8 +70,8 @@ const mockReminders: VacationReminder[] = [
     daysBeforeVacation: 7,
     isActive: true,
     isSent: false,
-    message: 'Max Mustermann ist vom 23.12.2024 bis 30.12.2024 im Weihnachtsurlaub.',
-    createdAt: '2024-12-01T10:00:00Z',
+    message: DEFAULT_VACATION_MESSAGE,
+    createdAt: CREATED_DATE,
     createdBy: '2'
   },
   {
@@ -79,8 +83,8 @@ const mockReminders: VacationReminder[] = [
     daysBeforeVacation: 2,
     isActive: true,
     isSent: false,
-    message: 'Max Mustermann ist vom 23.12.2024 bis 30.12.2024 im Weihnachtsurlaub.',
-    createdAt: '2024-12-01T10:00:00Z',
+    message: DEFAULT_VACATION_MESSAGE,
+    createdAt: CREATED_DATE,
     createdBy: '2'
   }
 ];

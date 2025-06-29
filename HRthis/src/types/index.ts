@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string; // Work email (system login)
   name: string;
-  role: 'EMPLOYEE' | 'ADMIN' | 'SUPERADMIN';
+  role: UserRole;
   organizationId: string;
   // Personal info
   firstName?: string;
@@ -22,9 +22,9 @@ export interface User {
   position?: string;
   department?: string;
   weeklyHours?: number;
-  employmentType?: 'FULL_TIME' | 'PART_TIME' | 'MINI_JOB';
+  employmentType?: EmploymentType;
   joinDate?: string;
-  employmentStatus?: 'ACTIVE' | 'PARENTAL_LEAVE' | 'TERMINATED';
+  employmentStatus?: EmploymentStatus;
   vacationDays?: number; // Total vacation days per year
   // Team management
   teamIds?: string[]; // Teams the user belongs to
@@ -116,6 +116,11 @@ export interface VacationBalance {
   remainingDays: number;
   year: number;
 }
+
+// Type definitions
+export type UserRole = 'EMPLOYEE' | 'ADMIN' | 'SUPERADMIN';
+export type EmploymentType = 'FULL_TIME' | 'PART_TIME' | 'MINI_JOB';
+export type EmploymentStatus = 'ACTIVE' | 'PARENTAL_LEAVE' | 'TERMINATED';
 
 // Re-export benefit and training types
 export * from './benefits';

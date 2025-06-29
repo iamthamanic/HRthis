@@ -6,8 +6,24 @@ import { AIGenerationRequest, AIGeneratedContent } from '../types/training';
  * Uses OpenAI GPT-4o to generate training content, lessons, and quizzes
  */
 
-export const generateTrainingContent = async (request: AIGenerationRequest): Promise<AIGeneratedContent> => {
-  const prompt = `
+const buildTrainingPrompt = (request: AIGenerationRequest): string => {
+  const difficultyText = request.difficulty === 'BEGINNER' 
+    ? 'Anfänger: Grundlagen erklären' 
+    : request.difficulty === 'INTERMEDIATE' 
+    ? 'Fortgeschritten: Vertiefte Kenntnisse vermitteln' 
+    : 'Experte: Spezialisiertes Fachwissen';
+
+  const quizSection = request.includeQuiz 
+    ? '- Quiz mit 2-3 Multiple-Choice-Fragen pro Lektion\n   - Jede Frage mit 4 Antwortmöglichkeiten, korrekter Antwort und Erklärung'
+    : '';
+
+  const finalQuizSection = request.includeQuiz 
+    ? `4. **Abschlussprüfung**: 
+   - 2-3 zusammenfassende Fragen über alle Lektionen
+   - Bestehensgrenze: 70%` 
+    : '';
+
+  return `
 Du bist ein Experte für Unternehmensschulungen und E-Learning. Erstelle eine strukturierte Schulung basierend auf folgenden Vorgaben:
 
 **Schulungsanfrage:**
@@ -28,31 +44,26 @@ Erstelle eine vollständige Schulung mit folgender Struktur:
    - Titel der Lektion
    - Kurze Beschreibung (1-2 Sätze)
    - Detaillierter Inhalt (strukturiert mit Überschriften, Aufzählungen, praktischen Beispielen)
-   ${request.includeQuiz ? '- Quiz mit 2-3 Multiple-Choice-Fragen pro Lektion\n   - Jede Frage mit 4 Antwortmöglichkeiten, korrekter Antwort und Erklärung' : ''}
+   ${quizSection}
 
-${request.includeQuiz ? `4. **Abschlussprüfung**: 
-   - 2-3 zusammenfassende Fragen über alle Lektionen
-   - Bestehensgrenze: 70%` : ''}
+${finalQuizSection}
 
 **Wichtige Anforderungen:**
 - Inhalt muss praxisnah und unternehmensrelevant sein
 - Verwende klare, verständliche Sprache
 - Strukturiere den Inhalt logisch und aufbauend
 - Beispiele und Fallstudien einbauen
-- Bei ${request.difficulty === 'BEGINNER' ? 'Anfänger: Grundlagen erklären' : request.difficulty === 'INTERMEDIATE' ? 'Fortgeschritten: Vertiefte Kenntnisse vermitteln' : 'Experte: Spezialisiertes Fachwissen'}
+- Bei ${difficultyText}
 
 **Antwortformat:**
-Antworte ausschließlich in folgendem JSON-Format:
+${buildJsonFormat(request)}
 
-{
-  "title": "Schulungstitel",
-  "description": "Schulungsbeschreibung",
-  "lessons": [
-    {
-      "title": "Lektionstitel",
-      "description": "Lektionsbeschreibung",
-      "content": "Detaillierter Lektionsinhalt mit Markdown-Formatierung",
-      ${request.includeQuiz ? `"quiz": {
+Erstelle jetzt die Schulung:`;
+};
+
+const buildJsonFormat = (request: AIGenerationRequest): string => {
+  const quizFormat = request.includeQuiz 
+    ? `"quiz": {
         "questions": [
           {
             "question": "Frage?",
@@ -62,9 +73,11 @@ Antworte ausschließlich in folgendem JSON-Format:
           }
         ],
         "passingScore": 80
-      }` : ''}
-    }
-  ]${request.includeQuiz ? `,
+      }`
+    : '';
+
+  const finalQuizFormat = request.includeQuiz 
+    ? `,
   "finalQuiz": {
     "questions": [
       {
@@ -75,12 +88,93 @@ Antworte ausschließlich in folgendem JSON-Format:
       }
     ],
     "passingScore": 70
-  }` : ''}
-}
+  }`
+    : '';
 
-Erstelle jetzt die Schulung:`;
+  return `Antworte ausschließlich in folgendem JSON-Format:
 
+{
+  "title": "Schulungstitel",
+  "description": "Schulungsbeschreibung",
+  "lessons": [
+    {
+      "title": "Lektionstitel",
+      "description": "Lektionsbeschreibung",
+      "content": "Detaillierter Lektionsinhalt mit Markdown-Formatierung",
+      ${quizFormat}
+    }
+  ]${finalQuizFormat}
+}`;
+};
+
+const parseAIResponse = (response: string, request: AIGenerationRequest): AIGeneratedContent => {
   try {
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    const jsonString = jsonMatch ? jsonMatch[0] : response;
+    return JSON.parse(jsonString);
+  } catch (parseError) {
+    return createFallbackContent(response, request);
+  }
+};
+
+const createFallbackContent = (response: string, request: AIGenerationRequest): AIGeneratedContent => {
+  return {
+    title: `${request.topic} - Umfassende Schulung`,
+    description: `Eine strukturierte Schulung zu ${request.topic} für ${request.targetAudience}. Diese Schulung vermittelt alle wichtigen Grundlagen und praktischen Anwendungen.`,
+    lessons: Array.from({ length: request.lessonCount }, (_, i) => ({
+      title: `Lektion ${i + 1}: ${request.topic} Grundlagen`,
+      description: `In dieser Lektion lernen Sie die wichtigsten Aspekte von ${request.topic} kennen.`,
+      content: `# Lektion ${i + 1}: ${request.topic}\n\n${response.substring(0, 500)}...`,
+      quiz: request.includeQuiz ? createDefaultQuiz(request.topic) : undefined
+    })),
+    finalQuiz: request.includeQuiz ? createDefaultFinalQuiz(request.topic) : undefined
+  };
+};
+
+const createDefaultQuiz = (topic: string) => ({
+  questions: [
+    {
+      question: `Was ist das wichtigste Prinzip bei ${topic}?`,
+      options: [
+        'Sicherheit und Compliance',
+        'Effizienz',
+        'Kostenoptimierung',
+        'Alle genannten Punkte'
+      ],
+      correctAnswer: 3,
+      explanation: `Bei ${topic} sind alle Aspekte wichtig, aber besonders die Balance zwischen Sicherheit, Effizienz und Kosten.`
+    }
+  ],
+  passingScore: 80
+});
+
+const createDefaultFinalQuiz = (topic: string) => ({
+  questions: [
+    {
+      question: `Was haben Sie in dieser ${topic} Schulung gelernt?`,
+      options: [
+        'Grundlagen und Best Practices',
+        'Nur theoretisches Wissen',
+        'Veraltete Methoden',
+        'Nichts Neues'
+      ],
+      correctAnswer: 0,
+      explanation: 'Diese Schulung vermittelt sowohl theoretische Grundlagen als auch praktische Best Practices.'
+    }
+  ],
+  passingScore: 70
+});
+
+const validateGeneratedContent = (content: AIGeneratedContent): void => {
+  if (!content.title || !content.description || !content.lessons) {
+    throw new Error('Invalid AI response structure');
+  }
+};
+
+export const generateTrainingContent = async (request: AIGenerationRequest): Promise<AIGeneratedContent> => {
+  try {
+    const prompt = buildTrainingPrompt(request);
+    
     const aiResponse = await getOpenAITextResponse([
       {
         role: 'system',
@@ -92,66 +186,9 @@ Erstelle jetzt die Schulung:`;
       }
     ], { model: 'gpt-4o' });
     
-    const response = aiResponse.content;
-
-    // Parse the AI response
-    let parsedContent: AIGeneratedContent;
+    const parsedContent = parseAIResponse(aiResponse.content, request);
+    validateGeneratedContent(parsedContent);
     
-    try {
-      // Extract JSON from response (in case there's additional text)
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      const jsonString = jsonMatch ? jsonMatch[0] : response;
-      parsedContent = JSON.parse(jsonString);
-    } catch (parseError) {
-      // Fallback: create structured content from text response
-      parsedContent = {
-        title: `${request.topic} - Umfassende Schulung`,
-        description: `Eine strukturierte Schulung zu ${request.topic} für ${request.targetAudience}. Diese Schulung vermittelt alle wichtigen Grundlagen und praktischen Anwendungen.`,
-        lessons: Array.from({ length: request.lessonCount }, (_, i) => ({
-          title: `Lektion ${i + 1}: ${request.topic} Grundlagen`,
-          description: `In dieser Lektion lernen Sie die wichtigsten Aspekte von ${request.topic} kennen.`,
-          content: `# Lektion ${i + 1}: ${request.topic}\n\n${response.substring(0, 500)}...`,
-          quiz: request.includeQuiz ? {
-            questions: [
-              {
-                question: `Was ist das wichtigste Prinzip bei ${request.topic}?`,
-                options: [
-                  'Sicherheit und Compliance',
-                  'Effizienz',
-                  'Kostenoptimierung',
-                  'Alle genannten Punkte'
-                ],
-                correctAnswer: 3,
-                explanation: `Bei ${request.topic} sind alle Aspekte wichtig, aber besonders die Balance zwischen Sicherheit, Effizienz und Kosten.`
-              }
-            ],
-            passingScore: 80
-          } : undefined
-        })),
-        finalQuiz: request.includeQuiz ? {
-          questions: [
-            {
-              question: `Was haben Sie in dieser ${request.topic} Schulung gelernt?`,
-              options: [
-                'Grundlagen und Best Practices',
-                'Nur theoretisches Wissen',
-                'Veraltete Methoden',
-                'Nichts Neues'
-              ],
-              correctAnswer: 0,
-              explanation: 'Diese Schulung vermittelt sowohl theoretische Grundlagen als auch praktische Best Practices.'
-            }
-          ],
-          passingScore: 70
-        } : undefined
-      };
-    }
-
-    // Validate the generated content
-    if (!parsedContent.title || !parsedContent.description || !parsedContent.lessons) {
-      throw new Error('Invalid AI response structure');
-    }
-
     return parsedContent;
   } catch (error) {
     console.error('AI Training Generation Error:', error);
@@ -162,13 +199,8 @@ Erstelle jetzt die Schulung:`;
 /**
  * Generate a training certificate using AI
  */
-export const generateCertificateText = async (
-  trainingTitle: string, 
-  userName: string, 
-  completionDate: string,
-  score: number
-): Promise<string> => {
-  const prompt = `
+const buildCertificatePrompt = (trainingTitle: string, userName: string, completionDate: string, score: number): string => {
+  return `
 Erstelle einen professionellen Zertifikatstext für eine abgeschlossene Unternehmensschulung.
 
 **Details:**
@@ -185,25 +217,10 @@ Erstelle einen professionellen Zertifikatstext für eine abgeschlossene Unterneh
 - Verwende "HRthis GmbH" als ausstellendes Unternehmen
 
 Erstelle einen strukturierten Zertifikatstext:`;
+};
 
-  try {
-    const aiResponse = await getOpenAITextResponse([
-      {
-        role: 'system',
-        content: 'Du erstellst professionelle Zertifikatstexte für Unternehmensschulungen in deutscher Sprache.'
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ], { model: 'gpt-4o' });
-
-    return aiResponse.content;
-  } catch (error) {
-    console.error('Certificate Generation Error:', error);
-    
-    // Fallback certificate text
-    return `
+const createFallbackCertificate = (trainingTitle: string, userName: string, completionDate: string, score: number): string => {
+  return `
 ZERTIFIKAT
 
 Hiermit wird bestätigt, dass
@@ -219,41 +236,55 @@ Diese Schulung vermittelte wichtige Kenntnisse und Fähigkeiten für den berufli
 
 HRthis GmbH
 Personalabteilung
-    `.trim();
+  `.trim();
+};
+
+export const generateCertificateText = async (
+  trainingTitle: string, 
+  userName: string, 
+  completionDate: string,
+  score: number
+): Promise<string> => {
+  try {
+    const prompt = buildCertificatePrompt(trainingTitle, userName, completionDate, score);
+    
+    const aiResponse = await getOpenAITextResponse([
+      {
+        role: 'system',
+        content: 'Du erstellst professionelle Zertifikatstexte für Unternehmensschulungen in deutscher Sprache.'
+      },
+      {
+        role: 'user',
+        content: prompt
+      }
+    ], { model: 'gpt-4o' });
+
+    return aiResponse.content;
+  } catch (error) {
+    console.error('Certificate Generation Error:', error);
+    return createFallbackCertificate(trainingTitle, userName, completionDate, score);
   }
 };
 
 /**
  * Generate email content for training notifications
  */
-export const generateTrainingNotificationEmail = async (
-  type: 'NEW_TRAINING' | 'REMINDER' | 'DEADLINE_APPROACHING' | 'COMPLETED' | 'FAILED',
-  userName: string,
-  trainingTitle: string,
-  additionalInfo?: string
-): Promise<{ subject: string; body: string }> => {
-  let promptContext = '';
-  
-  switch (type) {
-    case 'NEW_TRAINING':
-      promptContext = 'eine neue Schulung ist verfügbar';
-      break;
-    case 'REMINDER':
-      promptContext = 'Erinnerung an eine nicht abgeschlossene Schulung';
-      break;
-    case 'DEADLINE_APPROACHING':
-      promptContext = 'die Deadline einer Schulung nähert sich';
-      break;
-    case 'COMPLETED':
-      promptContext = 'Gratulation zur abgeschlossenen Schulung';
-      break;
-    case 'FAILED':
-      promptContext = 'Information über nicht bestandene Schulung';
-      break;
-  }
+type NotificationType = 'NEW_TRAINING' | 'REMINDER' | 'DEADLINE_APPROACHING' | 'COMPLETED' | 'FAILED';
 
-  const prompt = `
-Erstelle eine professionelle E-Mail für ${promptContext}.
+const getNotificationContext = (type: NotificationType): string => {
+  const contexts = {
+    NEW_TRAINING: 'eine neue Schulung ist verfügbar',
+    REMINDER: 'Erinnerung an eine nicht abgeschlossene Schulung',
+    DEADLINE_APPROACHING: 'die Deadline einer Schulung nähert sich',
+    COMPLETED: 'Gratulation zur abgeschlossenen Schulung',
+    FAILED: 'Information über nicht bestandene Schulung'
+  };
+  return contexts[type];
+};
+
+const buildEmailPrompt = (context: string, userName: string, trainingTitle: string, additionalInfo?: string): string => {
+  return `
+Erstelle eine professionelle E-Mail für ${context}.
 
 **Details:**
 - Empfänger: ${userName}
@@ -269,8 +300,44 @@ Erstelle eine professionelle E-Mail für ${promptContext}.
 - Link zur HRthis App erwähnen
 
 Erstelle Betreff und E-Mail-Text:`;
+};
 
+const extractEmailContent = (response: string, trainingTitle: string): { subject: string; body: string } => {
+  const lines = response.split('\n');
+  const subjectLine = lines.find((line: string) => line.toLowerCase().includes('betreff:') || line.toLowerCase().includes('subject:'));
+  const subject = subjectLine ? subjectLine.replace(/betreff:|subject:/i, '').trim() : `HRthis: ${trainingTitle}`;
+  
+  const bodyStart = response.indexOf('\n\n') > 0 ? response.indexOf('\n\n') + 2 : 0;
+  const body = response.substring(bodyStart).trim();
+
+  return { subject, body };
+};
+
+const createFallbackEmail = (type: NotificationType, userName: string, trainingTitle: string): { subject: string; body: string } => {
+  const fallbackSubjects = {
+    NEW_TRAINING: `Neue Schulung verfügbar: ${trainingTitle}`,
+    REMINDER: `Erinnerung: Schulung "${trainingTitle}" noch nicht abgeschlossen`,
+    DEADLINE_APPROACHING: `Deadline nähert sich: ${trainingTitle}`,
+    COMPLETED: `Glückwunsch! Schulung "${trainingTitle}" erfolgreich abgeschlossen`,
+    FAILED: `Schulung "${trainingTitle}" - Wiederholung erforderlich`
+  };
+
+  return {
+    subject: fallbackSubjects[type],
+    body: `Hallo ${userName},\n\nbezüglich der Schulung "${trainingTitle}" gibt es eine wichtige Information.\n\nBitte loggen Sie sich in die HRthis App ein, um weitere Details zu erfahren.\n\nBeste Grüße\nIhr HRthis Team`
+  };
+};
+
+export const generateTrainingNotificationEmail = async (
+  type: NotificationType,
+  userName: string,
+  trainingTitle: string,
+  additionalInfo?: string
+): Promise<{ subject: string; body: string }> => {
   try {
+    const context = getNotificationContext(type);
+    const prompt = buildEmailPrompt(context, userName, trainingTitle, additionalInfo);
+    
     const aiResponse = await getOpenAITextResponse([
       {
         role: 'system',
@@ -282,32 +349,9 @@ Erstelle Betreff und E-Mail-Text:`;
       }
     ], { model: 'gpt-4o' });
     
-    const response = aiResponse.content;
-
-    // Extract subject and body from response
-    const lines = response.split('\n');
-    const subjectLine = lines.find((line: string) => line.toLowerCase().includes('betreff:') || line.toLowerCase().includes('subject:'));
-    const subject = subjectLine ? subjectLine.replace(/betreff:|subject:/i, '').trim() : `HRthis: ${trainingTitle}`;
-    
-    const bodyStart = response.indexOf('\n\n') > 0 ? response.indexOf('\n\n') + 2 : 0;
-    const body = response.substring(bodyStart).trim();
-
-    return { subject, body };
+    return extractEmailContent(aiResponse.content, trainingTitle);
   } catch (error) {
     console.error('Email Generation Error:', error);
-    
-    // Fallback email content
-    const fallbackSubjects = {
-      NEW_TRAINING: `Neue Schulung verfügbar: ${trainingTitle}`,
-      REMINDER: `Erinnerung: Schulung "${trainingTitle}" noch nicht abgeschlossen`,
-      DEADLINE_APPROACHING: `Deadline nähert sich: ${trainingTitle}`,
-      COMPLETED: `Glückwunsch! Schulung "${trainingTitle}" erfolgreich abgeschlossen`,
-      FAILED: `Schulung "${trainingTitle}" - Wiederholung erforderlich`
-    };
-
-    return {
-      subject: fallbackSubjects[type],
-      body: `Hallo ${userName},\n\nbezüglich der Schulung "${trainingTitle}" gibt es eine wichtige Information.\n\nBitte loggen Sie sich in die HRthis App ein, um weitere Details zu erfahren.\n\nBeste Grüße\nIhr HRthis Team`
-    };
+    return createFallbackEmail(type, userName, trainingTitle);
   }
 };

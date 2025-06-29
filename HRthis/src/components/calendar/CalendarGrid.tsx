@@ -18,12 +18,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
   const renderDayContent = (day: CalendarDay) => {
-    const dayEvents = events.filter(event => event.date === day.date.toISOString().split('T')[0]);
+    const dayDateString = day.date instanceof Date ? day.date.toISOString().split('T')[0] : day.date;
+    const dayEvents = events.filter(event => event.date === dayDateString);
     
     const filteredEvents = dayEvents.filter(event => {
       if (filterMode === 'all') return true;
-      if (filterMode === 'leaves') return event.type === 'vacation' || event.type === 'sick';
-      if (filterMode === 'work') return event.type === 'work';
+      if (filterMode === 'leaves') return event.type === 'urlaub' || event.type === 'krank';
+      if (filterMode === 'work') return event.type === 'zeit';
       return true;
     });
 
@@ -35,7 +36,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           day.isToday && "text-blue-600 font-bold",
           day.isWeekend && day.isCurrentMonth && "text-gray-600"
         )}>
-          {day.date.getDate()}
+          {day.date instanceof Date ? day.date.getDate() : new Date(day.date).getDate()}
         </span>
         
         <div className="flex-1 space-y-0.5">
@@ -57,7 +58,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         
         {day.isWeekend && day.isCurrentMonth && (
           <div className="text-xs text-gray-400 mt-auto">
-            {day.date.getDay() === 6 ? 'SA' : 'SO'}
+            {(day.date instanceof Date ? day.date.getDay() : new Date(day.date).getDay()) === 6 ? 'SA' : 'SO'}
           </div>
         )}
       </div>

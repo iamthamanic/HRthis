@@ -91,16 +91,21 @@ export interface Reward {
 export interface Avatar {
   id: string;
   userId: string;
+  name?: string;
   baseModel: string;
+  baseImage?: string;
   accessories: AvatarAccessory[];
   badges: Badge[];
   level: number;
   title: string;
+  backgroundColor?: string;
+  skinColor?: string;
+  hairColor?: string;
 }
 
 export interface AvatarAccessory {
   id: string;
-  type: 'hat' | 'glasses' | 'clothing' | 'background' | 'effect';
+  type: 'hat' | 'glasses' | 'clothing' | 'background' | 'effect' | 'badge';
   name: string;
   imageUrl: string;
   requiredLevel?: number;

@@ -203,7 +203,7 @@ const CreateLevelModal: React.FC<CreateLevelModalProps> = ({
  * Create and edit level progression system
  */
 export const LevelManagementScreen: React.FC = () => {
-  const { _getAllUserAvatars } = useAvatarStore();
+  const { getAllUserAvatars } = useAvatarStore();
   const [editingLevel, setEditingLevel] = useState<number | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -233,7 +233,7 @@ export const LevelManagementScreen: React.FC = () => {
     setEditingLevel(level);
   };
 
-  const handleSaveLevel = (level: number, _newXP: number) => {
+  const handleSaveLevel = (level: number, newXP: number) => {
     // This would update the level system configuration
     console.log(`Updating level ${level} to require ${newXP} XP`);
     setEditingLevel(null);

@@ -9,7 +9,7 @@ import { cn } from '../utils/cn';
  */
 export const AddEmployeeScreen = () => {
   const navigate = useNavigate();
-  const { _createUser, isLoading } = useAuthStore();
+  const { createUser, isLoading } = useAuthStore();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   

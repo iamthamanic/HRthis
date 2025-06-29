@@ -7,12 +7,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Neue UI System Imports
-import { PageContainer, HeaderCard, Section } from '../components/layout/Container';
-import { DashboardGrid, GridItem, StatsGrid } from '../components/layout/Grid';
+import { PageContainer, HeaderCard } from '../components/layout/Container';
+import { StatsGrid } from '../components/layout/Grid';
 import { StatsCard, InfoCard, AvatarCard, CardHeader, CardContent } from '../components/layout/Card';
 
 // Deine bestehenden Hooks (bleiben unverändert)
-import { useAuthStore } from '../../state/auth';
 // ... andere Hooks
 
 /**
@@ -21,8 +20,6 @@ import { useAuthStore } from '../../state/auth';
 
 // ❌ VORHER - Deine bisherige Struktur
 export const DashboardOld: React.FC = () => {
-  const navigate = useNavigate();
-  const { user } = useAuthStore();
   
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
@@ -68,7 +65,6 @@ export const DashboardOld: React.FC = () => {
 // ✅ NACHHER - Mit neuem UI-System
 export const DashboardNew: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   
   return (<PageContainer 
       title="Dashboard" 

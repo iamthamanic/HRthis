@@ -6,10 +6,99 @@ import {
   Level, 
   XPEvent, 
   LevelUpEvent,
-  DEFAULT_SKILLS,
-  calculateXPProgress,
   calculateLevelFromXP
 } from '../types/avatar';
+import { checkLevelUps } from './avatar-helpers';
+import { createNewUserAvatar, calculateUserStats } from './avatar-actions';
+import { processAddXP } from './avatar-xp';
+
+// Helper functions for avatar store actions
+const createAvatarActions = (get: any, set: any) => ({
+  updateSkill: (userId: string, skillId: string, updates: Partial<Skill>) => {
+    set((state: any) => {
+      const userAvatar = state.userAvatars[userId];
+      if (!userAvatar) return state;
+
+      const updatedSkills = userAvatar.skills.map((skill: Skill) =>
+        skill.id === skillId ? { ...skill, ...updates } : skill
+      );
+
+      return {
+        userAvatars: {
+          ...state.userAvatars,
+          [userId]: {
+            ...userAvatar,
+            skills: updatedSkills,
+            updatedAt: new Date().toISOString()
+          }
+        }
+      };
+    });
+  },
+
+  updateTitle: (userId: string, title: string) => {
+    set((state: any) => {
+      const userAvatar = state.userAvatars[userId];
+      if (!userAvatar) return state;
+      
+      return {
+        userAvatars: {
+          ...state.userAvatars,
+          [userId]: {
+            ...userAvatar,
+            title,
+            updatedAt: new Date().toISOString()
+          }
+        }
+      };
+    });
+  },
+
+  updateAvatar: (userId: string, avatarConfig: Partial<UserAvatar>) => {
+    set((state: any) => {
+      const userAvatar = state.userAvatars[userId];
+      if (!userAvatar) return state;
+      
+      return {
+        userAvatars: {
+          ...state.userAvatars,
+          [userId]: {
+            ...userAvatar,
+            ...avatarConfig,
+            updatedAt: new Date().toISOString()
+          }
+        }
+      };
+    });
+  }
+});
+
+const createLevelActions = (get: any, set: any) => ({
+  addLevel: (levelData: Omit<Level, 'id'>) => {
+    const newLevel: Level = {
+      ...levelData,
+      id: `level-${Date.now()}`
+    };
+
+    set((state: any) => ({
+      levels: [...state.levels, newLevel].sort((a, b) => a.levelNumber - b.levelNumber)
+    }));
+  },
+
+  updateLevel: (levelId: string, updates: Partial<Level>) => {
+    set((state: any) => ({
+      levels: state.levels.map((level: Level) =>
+        level.id === levelId ? { ...level, ...updates } : level
+      )
+    }));
+  },
+
+  deleteLevel: (levelId: string) => {
+    set((state: any) => ({
+      levels: state.levels.filter((level: Level) => level.id !== levelId)
+    }));
+  }
+});
 
 interface AvatarState {
   // User avatar data
@@ -21,26 +110,26 @@ interface AvatarState {
   levelUpEvents: LevelUpEvent[];
   
   // Actions
-  getUserAvatar: (_userId: string) => UserAvatar | null;
-  createUserAvatar: (_userId: string) => UserAvatar;
-  addXP: (_userId: string, _skillId: string | null, _xpAmount: number, _description: string, _metadata?: Record<string, any>) => void;
-  updateSkill: (_userId: string, _skillId: string, _updates: Partial<Skill>) => void;
+  getUserAvatar: (userId: string) => UserAvatar | null;
+  createUserAvatar: (userId: string) => UserAvatar;
+  addXP: (params: { userId: string; skillId: string | null; xpAmount: number; description: string; metadata?: Record<string, any> }) => void;
+  updateSkill: (userId: string, skillId: string, updates: Partial<Skill>) => void;
   
   // Level management
   getLevels: () => Level[];
-  getLevel: (_levelNumber: number) => Level | null;
+  getLevel: (levelNumber: number) => Level | null;
   addLevel: (level: Omit<Level, 'id'>) => void;
-  updateLevel: (_levelId: string, _updates: Partial<Level>) => void;
-  deleteLevel: (_levelId: string) => void;
+  updateLevel: (levelId: string, updates: Partial<Level>) => void;
+  deleteLevel: (levelId: string) => void;
   
   // XP and level calculations
-  calculateUserLevel: (_userId: string) => number;
-  checkLevelUp: (_userId: string) => LevelUpEvent[];
+  calculateUserLevel: (userId: string) => number;
+  checkLevelUp: (userId: string) => LevelUpEvent[];
   
   // Statistics
-  getXPEvents: (_userId: string, _limit?: number) => XPEvent[];
-  getLevelUpEvents: (_userId: string, _limit?: number) => LevelUpEvent[];
-  getUserStats: (_userId: string) => {
+  getXPEvents: (userId: string, limit?: number) => XPEvent[];
+  getLevelUpEvents: (userId: string, limit?: number) => LevelUpEvent[];
+  getUserStats: (userId: string) => {
     totalXP: number;
     level: number;
     skillLevels: Record<string, number>;
@@ -49,9 +138,9 @@ interface AvatarState {
   
   // Additional methods
   getAllUserAvatars: () => UserAvatar[];
-  getUserSkill: (_userId: string, _skillId: string) => Skill | undefined;
-  updateTitle: (_userId: string, _title: string) => void;
-  updateAvatar: (_userId: string, _avatarConfig: Partial<UserAvatar>) => void;
+  getUserSkill: (userId: string, skillId: string) => Skill | undefined;
+  updateTitle: (userId: string, title: string) => void;
+  updateAvatar: (userId: string, avatarConfig: Partial<UserAvatar>) => void;
 }
 
 // Mock default levels
@@ -68,325 +157,109 @@ const mockLevels: Level[] = [
   { id: '10', levelNumber: 10, title: 'Sensei', requiredXP: 2700, icon: '🥇', color: '#EF4444' }
 ];
 
-// Helper function to calculate new level based on XP
-const calculateLevel = (totalXP: number, levels: Level[]): number => {
-  for (let i = levels.length - 1; i >= 0; i--) {
-    if (totalXP >= levels[i].requiredXP) {
-      return levels[i].level;
-    }
-  }
-  return 1;
-};
-
-
-// Helper function to update skill XP and level
-const updateSkillXP = (skill: Skill, xpAmount: number, levels: Level[]): Skill => {
-  const newTotalXP = skill.totalXP + xpAmount;
-  const newLevel = calculateLevel(newTotalXP, levels);
-  const newCurrentXP = newTotalXP - (levels.find(l => l.level === newLevel)?.requiredXP || 0);
-  
-  return {
-    ...skill,
-    currentXP: newCurrentXP,
-    totalXP: newTotalXP,
-    level: newLevel
-  };
-};
 
 export const useAvatarStore = create<AvatarState>()(
   persist(
-    (set, get) => ({
-      userAvatars: {},
-      levels: mockLevels,
-      xpEvents: [],
-      levelUpEvents: [],
+    (set, get) => {
+      const avatarActions = createAvatarActions(get, set);
+      const levelActions = createLevelActions(get, set);
       
-      getUserAvatar: (userId) => {
-        const avatars = get().userAvatars;
-        return avatars[userId] || null;
-      },
-
-      createUserAvatar: (_userId: string) => {
-        const now = new Date().toISOString();
+      return {
+        userAvatars: {},
+        levels: mockLevels,
+        xpEvents: [],
+        levelUpEvents: [],
         
-        // Create default skills with 0 XP
-        const skills: Skill[] = DEFAULT_SKILLS.map(skillTemplate => ({
-          ...skillTemplate,
-          currentXP: 0,
-          level: 1,
-          totalXP: 0
-        }));
+        getUserAvatar: (userId) => {
+          const avatars = get().userAvatars;
+          return avatars[userId] || null;
+        },
 
-        const newAvatar: UserAvatar = {
-          userId,
-          level: 1,
-          totalXP: 0,
-          currentLevelXP: 0,
-          nextLevelXP: 100,
-          skills,
-          achievements: [],
-          lastActiveAt: now,
-          createdAt: now,
-          updatedAt: now
-        };
+        createUserAvatar: (userId: string) => {
+          const newAvatar = createNewUserAvatar(userId);
 
-        set(state => ({
-          userAvatars: {
-            ...state.userAvatars,
-            [userId]: newAvatar
-          }
-        }));
-
-        return newAvatar;
-      },
-
-      addXP: (_userId: string, _skillId: string | null | undefined, _xpAmount: number, _description: string, metadata = {}) => {
-        const now = new Date().toISOString();
-        let userAvatar = get().getUserAvatar(userId);
-        
-        // Create avatar if it doesn't exist
-        if (!userAvatar) {
-          userAvatar = get().createUserAvatar(userId);
-        }
-
-        // Create XP event
-        const xpEvent: XPEvent = {
-          id: `${userId}-${Date.now()}`,
-          userId,
-          type: metadata.type || 'manual',
-          skillId: skillId || undefined,
-          xpAmount,
-          description,
-          metadata,
-          createdAt: now
-        };
-
-        set(state => {
-          const updatedAvatar = { ...state.userAvatars[userId] };
-          
-          // Add to total XP
-          updatedAvatar.totalXP += xpAmount;
-          
-          // Update specific skill if provided
-          if (skillId) {
-            updatedAvatar.skills = updatedAvatar.skills.map(skill => {
-              if (skill.id === skillId) {
-                return updateSkillXP(skill, xpAmount, state.levels);
-              }
-              return skill;
-            });
-          }
-          
-          // Update overall level progress  
-          updatedAvatar.level = calculateLevel(updatedAvatar.totalXP, state.levels);
-          const overallProgress = calculateXPProgress(updatedAvatar.totalXP);
-          updatedAvatar.currentLevelXP = overallProgress.currentLevelXP;
-          updatedAvatar.nextLevelXP = overallProgress.nextLevelXP;
-          updatedAvatar.lastActiveAt = now;
-          updatedAvatar.updatedAt = now;
-
-          return {
-            userAvatars: {
-              ...state.userAvatars,
-              [userId]: updatedAvatar
-            },
-            xpEvents: [xpEvent, ...state.xpEvents]
-          };
-        });
-
-        // Check for level ups
-        get().checkLevelUp(userId);
-      },
-
-      updateSkill: (_userId: string, _skillId: string, _updates: Partial<Skill>) => {
-        set(state => {
-          const userAvatar = state.userAvatars[userId];
-          if (!userAvatar) return state;
-
-          const updatedSkills = userAvatar.skills.map(skill =>
-            skill.id === skillId ? { ...skill, ...updates } : skill
-          );
-
-          return {
-            userAvatars: {
-              ...state.userAvatars,
-              [userId]: {
-                ...userAvatar,
-                skills: updatedSkills,
-                updatedAt: new Date().toISOString()
-              }
-            }
-          };
-        });
-      },
-
-      getLevels: () => get().levels,
-
-      getLevel: (_levelNumber: number) => {
-        return get().levels.find(level => level.levelNumber === levelNumber) || null;
-      },
-
-      addLevel: (_levelData: Omit<Level, 'id'>) => {
-        const newLevel: Level = {
-          ...levelData,
-          id: `level-${Date.now()}`
-        };
-
-        set(_state => ({
-          levels: [...state.levels, newLevel].sort((a, b) => a.levelNumber - b.levelNumber)
-        }));
-      },
-
-      updateLevel: (_levelId: string, _updates: Partial<Level>) => {
-        set(state => ({
-          levels: state.levels.map(level =>
-            level.id === levelId ? { ...level, ...updates } : level
-          )
-        }));
-      },
-
-      deleteLevel: (_levelId: string) => {
-        set(state => ({
-          levels: state.levels.filter(level => level.id !== levelId)
-        }));
-      },
-
-      calculateUserLevel: (_userId: string) => {
-        const userAvatar = get().getUserAvatar(userId);
-        if (!userAvatar) return 1;
-        
-        return calculateLevelFromXP(userAvatar.totalXP);
-      },
-
-      checkLevelUp: (_userId: string) => {
-        const userAvatar = get().getUserAvatar(userId);
-        if (!userAvatar) return [];
-
-        const levelUpEvents: LevelUpEvent[] = [];
-        const now = new Date().toISOString();
-
-        // Check overall level up
-        const newOverallLevel = calculateLevelFromXP(userAvatar.totalXP);
-        if (newOverallLevel > userAvatar.level) {
-          const levelUpEvent: LevelUpEvent = {
-            userId,
-            oldLevel: userAvatar.level,
-            newLevel: newOverallLevel,
-            rewards: [], // Add level rewards logic here
-            timestamp: now
-          };
-          levelUpEvents.push(levelUpEvent);
-        }
-
-        // Check skill level ups
-        userAvatar.skills.forEach(skill => {
-          const newSkillLevel = calculateLevelFromXP(skill.totalXP);
-          if (newSkillLevel > skill.level) {
-            const skillLevelUpEvent: LevelUpEvent = {
-              userId,
-              oldLevel: skill.level,
-              newLevel: newSkillLevel,
-              skillId: skill.id,
-              rewards: [], // Add skill level rewards logic here
-              timestamp: now
-            };
-            levelUpEvents.push(skillLevelUpEvent);
-          }
-        });
-
-        if (levelUpEvents.length > 0) {
           set(state => ({
-            levelUpEvents: [...levelUpEvents, ...state.levelUpEvents]
+            userAvatars: {
+              ...state.userAvatars,
+              [userId]: newAvatar
+            }
           }));
-        }
 
-        return levelUpEvents;
-      },
+          return newAvatar;
+        },
 
-      getXPEvents: (userId: string, limit = 10) => {
-        return get().xpEvents
-          .filter(event => event.userId === userId)
-          .slice(0, limit);
-      },
+        addXP: (params: {
+          userId: string;
+          skillId: string | null | undefined;
+          xpAmount: number;
+          description: string;
+          metadata?: Record<string, any>;
+        }) => {
+          processAddXP(get, set, params);
+        },
 
-      getLevelUpEvents: (userId: string, limit = 5) => {
-        return get().levelUpEvents
-          .filter(event => event.userId === userId)
-          .slice(0, limit);
-      },
+        updateSkill: avatarActions.updateSkill,
+        updateTitle: avatarActions.updateTitle,
+        updateAvatar: avatarActions.updateAvatar,
 
-      getUserStats: (userId: string) => {
-        const userAvatar = get().getUserAvatar(userId);
-        const xpEvents = get().getXPEvents(userId, 5);
+        getLevels: () => get().levels,
+
+        getLevel: (levelNumber: number) => {
+          return get().levels.find(level => level.levelNumber === levelNumber) || null;
+        },
+
+        addLevel: levelActions.addLevel,
+        updateLevel: levelActions.updateLevel,
+        deleteLevel: levelActions.deleteLevel,
+
+        calculateUserLevel: (userId: string) => {
+          const userAvatar = get().getUserAvatar(userId);
+          if (!userAvatar) return 1;
+          
+          return calculateLevelFromXP(userAvatar.totalXP);
+        },
+
+        checkLevelUp: (userId: string) => {
+          const userAvatar = get().getUserAvatar(userId);
+          if (!userAvatar) return [];
+
+          return checkLevelUps({
+            userAvatar,
+            userId,
+            now: new Date().toISOString()
+          });
+        },
+
+        getXPEvents: (userId: string, limit = 10) => {
+          return get().xpEvents
+            .filter(event => event.userId === userId)
+            .slice(0, limit);
+        },
+
+        getLevelUpEvents: (userId: string, limit = 5) => {
+          return get().levelUpEvents
+            .filter(event => event.userId === userId)
+            .slice(0, limit);
+        },
+
+        getUserStats: (userId: string) => {
+          const userAvatar = get().getUserAvatar(userId);
+          const xpEvents = get().getXPEvents(userId, 5);
+          
+          return calculateUserStats(userAvatar, xpEvents);
+        },
         
-        if (!userAvatar) {
-          return {
-            totalXP: 0,
-            level: 1,
-            skillLevels: {},
-            recentEvents: []
-          };
+        getAllUserAvatars: () => {
+          return Object.values(get().userAvatars);
+        },
+        
+        getUserSkill: (userId: string, skillId: string) => {
+          const userAvatar = get().getUserAvatar(userId);
+          if (!userAvatar) return undefined;
+          return userAvatar.skills.find(skill => skill.id === skillId);
         }
-
-        const skillLevels = userAvatar.skills.reduce((acc, skill) => {
-          acc[skill.id] = skill.level;
-          return acc;
-        }, {} as Record<string, number>);
-
-        return {
-          totalXP: userAvatar.totalXP,
-          level: userAvatar.level,
-          skillLevels,
-          recentEvents: xpEvents
-        };
-      },
-      
-      getAllUserAvatars: () => {
-        return Object.values(get().userAvatars);
-      },
-      
-      getUserSkill: (userId: string, skillId: string) => {
-        const userAvatar = get().getUserAvatar(userId);
-        if (!userAvatar) return undefined;
-        return userAvatar.skills.find(skill => skill.id === skillId);
-      },
-      
-      updateTitle: (userId: string, title: string) => {
-        set(state => {
-          const userAvatar = state.userAvatars[userId];
-          if (!userAvatar) return state;
-          
-          return {
-            userAvatars: {
-              ...state.userAvatars,
-              [userId]: {
-                ...userAvatar,
-                title,
-                updatedAt: new Date().toISOString()
-              }
-            }
-          };
-        });
-      },
-      
-      updateAvatar: (userId: string, avatarConfig: Partial<UserAvatar>) => {
-        set(state => {
-          const userAvatar = state.userAvatars[userId];
-          if (!userAvatar) return state;
-          
-          return {
-            userAvatars: {
-              ...state.userAvatars,
-              [userId]: {
-                ...userAvatar,
-                ...avatarConfig,
-                updatedAt: new Date().toISOString()
-              }
-            }
-          };
-        });
-      }
-    }),
+      };
+    },
     {
       name: 'avatar-storage',
       storage: createJSONStorage(() => localStorage),

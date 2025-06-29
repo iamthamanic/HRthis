@@ -48,8 +48,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       case '/requests':
         if (isAdmin) {
           // For admin: show pending leave requests (these are the actionable items)
-          const pendingRequests = getAllLeaveRequests().filter(req => req.status === 'PENDING').length;
-          return pendingRequests;
+          return getAllLeaveRequests().filter(req => req.status === 'PENDING').length;
         } else {
           // For users: show unread notifications about their requests
           return getUnreadCount(user.id);
