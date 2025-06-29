@@ -22,71 +22,59 @@ const backgroundColors = [
   '#FFEBEE', '#F3F4F6', '#FFFDE7', '#E0F2F1'
 ];
 
+const ColorPalette: React.FC<{
+  title: string;
+  colors: string[];
+  selectedColor: string;
+  onColorSelect: (color: string) => void;
+  isRounded?: boolean;
+}> = ({ title, colors, selectedColor, onColorSelect, isRounded = true }) => (
+  <div>
+    <h4 className="font-medium text-gray-700 mb-3">{title}</h4>
+    <div className="flex flex-wrap gap-2">
+      {colors.map(color => (
+        <button
+          key={color}
+          onClick={() => onColorSelect(color)}
+          className={cn(
+            "w-12 h-12 border-4 transition-all",
+            isRounded ? "rounded-full" : "rounded-lg",
+            selectedColor === color
+              ? "border-blue-500 scale-110"
+              : "border-gray-300 hover:border-gray-400"
+          )}
+          style={{ backgroundColor: color }}
+        />
+      ))}
+    </div>
+  </div>
+);
+
 export const ColorTab: React.FC<ColorTabProps> = ({
   previewAvatar,
   onColorChange
-}) => {
-  return (
-    <div className="space-y-6">
-      {/* Skin Color */}
-      <div>
-        <h4 className="font-medium text-gray-700 mb-3">Hautfarbe</h4>
-        <div className="flex flex-wrap gap-2">
-          {skinColors.map(color => (
-            <button
-              key={color}
-              onClick={() => onColorChange('skin', color)}
-              className={cn(
-                "w-12 h-12 rounded-full border-4 transition-all",
-                previewAvatar.skinColor === color
-                  ? "border-blue-500 scale-110"
-                  : "border-gray-300 hover:border-gray-400"
-              )}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Hair Color */}
-      <div>
-        <h4 className="font-medium text-gray-700 mb-3">Haarfarbe</h4>
-        <div className="flex flex-wrap gap-2">
-          {hairColors.map(color => (
-            <button
-              key={color}
-              onClick={() => onColorChange('hair', color)}
-              className={cn(
-                "w-12 h-12 rounded-full border-4 transition-all",
-                previewAvatar.hairColor === color
-                  ? "border-blue-500 scale-110"
-                  : "border-gray-300 hover:border-gray-400"
-              )}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Background Color */}
-      <div>
-        <h4 className="font-medium text-gray-700 mb-3">Hintergrund</h4>
-        <div className="flex flex-wrap gap-2">
-          {backgroundColors.map(color => (
-            <button
-              key={color}
-              onClick={() => onColorChange('background', color)}
-              className={cn(
-                "w-12 h-12 rounded-lg border-4 transition-all",
-                previewAvatar.backgroundColor === color
-                  ? "border-blue-500 scale-110"
-                  : "border-gray-300 hover:border-gray-400"
-              )}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+}) => (
+  <div className="space-y-6">
+    <ColorPalette
+      title="Hautfarbe"
+      colors={skinColors}
+      selectedColor={previewAvatar.skinColor}
+      onColorSelect={(color) => onColorChange('skin', color)}
+    />
+    
+    <ColorPalette
+      title="Haarfarbe"
+      colors={hairColors}
+      selectedColor={previewAvatar.hairColor}
+      onColorSelect={(color) => onColorChange('hair', color)}
+    />
+    
+    <ColorPalette
+      title="Hintergrund"
+      colors={backgroundColors}
+      selectedColor={previewAvatar.backgroundColor}
+      onColorSelect={(color) => onColorChange('background', color)}
+      isRounded={false}
+    />
+  </div>
+);

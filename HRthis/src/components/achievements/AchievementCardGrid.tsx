@@ -36,30 +36,100 @@ const getRarityBadgeClasses = (rarity: string) => {
   return rarityClasses[rarity as keyof typeof rarityClasses] || rarityClasses.common;
 };
 
-const ProgressRing: React.FC<{ progress: number }> = ({ progress }) => (
-  <div className="absolute inset-0 flex items-center justify-center">
-    <svg className="w-24 h-24 transform -rotate-90">
-      <circle
-        cx="48"
-        cy="48" 
-        r="44"
-        stroke="currentColor"
-        strokeWidth="4"
-        fill="none"
-        className="text-gray-200"
-      />
-      <circle
-        cx="48"
-        cy="48"
-        r="44"
-        stroke="currentColor"
-        strokeWidth="4"
-        fill="none"
-        strokeDasharray={`${2 * Math.PI * 44}`}
-        strokeDashoffset={`${2 * Math.PI * 44 * (1 - progress / 100)}`}
-        className="text-blue-500 transition-all duration-300"
-      />
-    </svg>
+const ProgressRing: React.FC<{ progress: number }> = ({ progress }) => {
+  const circumference = 2 * Math.PI * 44;
+  const strokeDashoffset = circumference * (1 - progress / 100);
+  
+  return (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <svg className="w-24 h-24 transform -rotate-90">
+        <circle
+          cx="48"
+          cy="48" 
+          r="44"
+          stroke="currentColor"
+          strokeWidth="4"
+          fill="none"
+          className="text-gray-200"
+        />
+        <circle
+          cx="48"
+          cy="48"
+          r="44"
+          stroke="currentColor"
+          strokeWidth="4"
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          className="text-blue-500 transition-all duration-300"
+        />
+      </svg>
+    </div>
+  );
+};
+
+const CardIcon: React.FC<{ achievement: Achievement; isUnlocked: boolean; progress: number }> = ({ achievement, isUnlocked, progress }) => (
+  <div className="relative mb-4">
+    <div className={cn(
+      "w-20 h-20 rounded-full flex items-center justify-center text-3xl text-white shadow-lg mx-auto",
+      `bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]}`,
+      !isUnlocked && "grayscale"
+    )}>
+      <span>{achievement.icon}</span>
+    </div>
+    
+    {!isUnlocked && progress > 0 && <ProgressRing progress={progress} />}
+    
+    {!isUnlocked && progress === 0 && (
+      <div className="absolute bottom-0 right-0 w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm">
+        🔒
+      </div>
+    )}
+  </div>
+);
+
+const CardContent: React.FC<{ achievement: Achievement; isUnlocked: boolean; unlockedAt?: string; progress: number }> = ({ achievement, isUnlocked, unlockedAt, progress }) => (
+  <div className="text-center">
+    <h3 className={cn(
+      "font-semibold mb-2",
+      isUnlocked ? "text-gray-900" : "text-gray-500"
+    )}>
+      {achievement.name}
+    </h3>
+    
+    <p className={cn(
+      "text-sm mb-3",
+      isUnlocked ? "text-gray-600" : "text-gray-400"
+    )}>
+      {achievement.description}
+    </p>
+    
+    <div className={cn(
+      "inline-block text-xs px-3 py-1 rounded-full font-medium mb-2",
+      getRarityBadgeClasses(achievement.rarity)
+    )}>
+      {RARITY_LABELS[achievement.rarity]}
+    </div>
+    
+    {isUnlocked && unlockedAt && (
+      <p className="text-xs text-gray-500">
+        Freigeschaltet am {format(new Date(unlockedAt), 'dd.MM.yyyy', { locale: de })}
+      </p>
+    )}
+    
+    {!isUnlocked && progress > 0 && (
+      <div className="mt-3">
+        <p className="text-xs text-gray-500 mb-1">
+          {Math.round(progress)}% abgeschlossen
+        </p>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${Math.min(100, progress)}%` }}
+          />
+        </div>
+      </div>
+    )}
   </div>
 );
 
@@ -80,72 +150,7 @@ export const AchievementCardGrid: React.FC<AchievementCardGridProps> = ({
     )}
     onClick={onClick}
   >
-    {/* Icon */}
-    <div className="relative mb-4">
-      <div className={cn(
-        "w-20 h-20 rounded-full flex items-center justify-center text-3xl text-white shadow-lg mx-auto",
-        `bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]}`,
-        !isUnlocked && "grayscale"
-      )}>
-        <span>{achievement.icon}</span>
-      </div>
-      
-      {/* Progress ring for locked achievements */}
-      {!isUnlocked && progress > 0 && <ProgressRing progress={progress} />}
-      
-      {/* Lock icon for locked achievements */}
-      {!isUnlocked && progress === 0 && (
-        <div className="absolute bottom-0 right-0 w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm">
-          🔒
-        </div>
-      )}
-    </div>
-
-    {/* Content */}
-    <div className="text-center">
-      <h3 className={cn(
-        "font-semibold mb-2",
-        isUnlocked ? "text-gray-900" : "text-gray-500"
-      )}>
-        {achievement.name}
-      </h3>
-      
-      <p className={cn(
-        "text-sm mb-3",
-        isUnlocked ? "text-gray-600" : "text-gray-400"
-      )}>
-        {achievement.description}
-      </p>
-      
-      {/* Rarity badge */}
-      <div className={cn(
-        "inline-block text-xs px-3 py-1 rounded-full font-medium mb-2",
-        getRarityBadgeClasses(achievement.rarity)
-      )}>
-        {RARITY_LABELS[achievement.rarity]}
-      </div>
-      
-      {/* Unlock date */}
-      {isUnlocked && unlockedAt && (
-        <p className="text-xs text-gray-500">
-          Freigeschaltet am {format(new Date(unlockedAt), 'dd.MM.yyyy', { locale: de })}
-        </p>
-      )}
-      
-      {/* Progress for locked achievements */}
-      {!isUnlocked && progress > 0 && (
-        <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-1">
-            {Math.round(progress)}% abgeschlossen
-          </p>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${Math.min(100, progress)}%` }}
-            />
-          </div>
-        </div>
-      )}
-    </div>
+    <CardIcon achievement={achievement} isUnlocked={isUnlocked} progress={progress} />
+    <CardContent achievement={achievement} isUnlocked={isUnlocked} unlockedAt={unlockedAt} progress={progress} />
   </div>
 );

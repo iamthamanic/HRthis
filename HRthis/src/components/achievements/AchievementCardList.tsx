@@ -51,6 +51,68 @@ const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (
   </div>
 );
 
+const AchievementIcon: React.FC<{ achievement: Achievement; isUnlocked: boolean; progress: number }> = ({ achievement, isUnlocked, progress }) => (
+  <div className={cn(
+    "w-16 h-16 rounded-full flex items-center justify-center text-2xl text-white shadow-md relative",
+    `bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]}`,
+    !isUnlocked && "grayscale"
+  )}>
+    <span>{achievement.icon}</span>
+    {!isUnlocked && progress > 0 && (
+      <div className="absolute inset-0 rounded-full border-4 border-gray-300">
+        <div 
+          className="absolute inset-0 rounded-full border-4 border-blue-500"
+          style={{
+            clipPath: `polygon(50% 50%, 50% 0%, ${50 + (progress / 100) * 50}% 0%, 100% 100%, 0% 100%)`
+          }}
+        />
+      </div>
+    )}
+  </div>
+);
+
+const AchievementContent: React.FC<{ 
+  achievement: Achievement; 
+  isUnlocked: boolean; 
+  unlockedAt?: string; 
+  progress: number; 
+}> = ({ achievement, isUnlocked, unlockedAt, progress }) => (
+  <div className="flex-1">
+    <div className="flex items-start justify-between mb-2">
+      <div>
+        <h3 className={cn(
+          "font-semibold",
+          isUnlocked ? "text-gray-900" : "text-gray-500"
+        )}>
+          {achievement.name}
+        </h3>
+        <p className={cn(
+          "text-sm",
+          isUnlocked ? "text-gray-600" : "text-gray-400"
+        )}>
+          {achievement.description}
+        </p>
+      </div>
+      
+      <div className="text-right">
+        <div className={cn(
+          "text-xs px-2 py-1 rounded-full font-medium",
+          getRarityBadgeClasses(achievement.rarity)
+        )}>
+          {RARITY_LABELS[achievement.rarity]}
+        </div>
+        {isUnlocked && unlockedAt && (
+          <p className="text-xs text-gray-500 mt-1">
+            {format(new Date(unlockedAt), 'dd.MM.yyyy', { locale: de })}
+          </p>
+        )}
+      </div>
+    </div>
+
+    {!isUnlocked && progress > 0 && <ProgressBar progress={progress} />}
+  </div>
+);
+
 export const AchievementCardList: React.FC<AchievementCardListProps> = ({
   achievement,
   isUnlocked,
@@ -68,60 +130,12 @@ export const AchievementCardList: React.FC<AchievementCardListProps> = ({
     )}
     onClick={onClick}
   >
-    {/* Icon */}
-    <div className={cn(
-      "w-16 h-16 rounded-full flex items-center justify-center text-2xl text-white shadow-md relative",
-      `bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]}`,
-      !isUnlocked && "grayscale"
-    )}>
-      <span>{achievement.icon}</span>
-      {!isUnlocked && progress > 0 && (
-        <div className="absolute inset-0 rounded-full border-4 border-gray-300">
-          <div 
-            className="absolute inset-0 rounded-full border-4 border-blue-500"
-            style={{
-              clipPath: `polygon(50% 50%, 50% 0%, ${50 + (progress / 100) * 50}% 0%, 100% 100%, 0% 100%)`
-            }}
-          />
-        </div>
-      )}
-    </div>
-
-    {/* Content */}
-    <div className="flex-1">
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h3 className={cn(
-            "font-semibold",
-            isUnlocked ? "text-gray-900" : "text-gray-500"
-          )}>
-            {achievement.name}
-          </h3>
-          <p className={cn(
-            "text-sm",
-            isUnlocked ? "text-gray-600" : "text-gray-400"
-          )}>
-            {achievement.description}
-          </p>
-        </div>
-        
-        <div className="text-right">
-          <div className={cn(
-            "text-xs px-2 py-1 rounded-full font-medium",
-            getRarityBadgeClasses(achievement.rarity)
-          )}>
-            {RARITY_LABELS[achievement.rarity]}
-          </div>
-          {isUnlocked && unlockedAt && (
-            <p className="text-xs text-gray-500 mt-1">
-              {format(new Date(unlockedAt), 'dd.MM.yyyy', { locale: de })}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Progress bar for locked achievements */}
-      {!isUnlocked && progress > 0 && <ProgressBar progress={progress} />}
-    </div>
+    <AchievementIcon achievement={achievement} isUnlocked={isUnlocked} progress={progress} />
+    <AchievementContent 
+      achievement={achievement} 
+      isUnlocked={isUnlocked} 
+      unlockedAt={unlockedAt} 
+      progress={progress} 
+    />
   </div>
 );

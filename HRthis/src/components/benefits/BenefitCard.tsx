@@ -31,6 +31,72 @@ const getCategoryName = (category: string): string => {
   }
 };
 
+const BenefitHeader: React.FC<{ benefit: ShopBenefit }> = ({ benefit }) => (
+  <div className="flex items-start justify-between mb-3">
+    <div className="flex items-center">
+      <span className="text-2xl mr-3">{getCategoryIcon(benefit.category)}</span>
+      <div>
+        <h3 className="font-semibold text-gray-900">{benefit.title}</h3>
+        <p className="text-xs text-gray-500">{getCategoryName(benefit.category)}</p>
+      </div>
+    </div>
+    <div className="text-right">
+      <p className="text-lg font-bold text-blue-600">{benefit.coinCost}</p>
+      <p className="text-xs text-gray-500">Coins</p>
+    </div>
+  </div>
+);
+
+const AdminControls: React.FC<{
+  benefit: ShopBenefit;
+  onEdit: (benefit: ShopBenefit) => void;
+  onDelete: (id: string) => void;
+}> = ({ benefit, onEdit, onDelete }) => (
+  <div className="flex gap-2 mb-2">
+    <button
+      onClick={() => onEdit(benefit)}
+      className="flex-1 p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
+    >
+      ✏️ Bearbeiten
+    </button>
+    <button
+      onClick={() => onDelete(benefit.id)}
+      className="flex-1 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
+    >
+      🗑️ Löschen
+    </button>
+  </div>
+);
+
+const PurchaseButton: React.FC<{
+  benefit: ShopBenefit;
+  canPurchase: boolean;
+  isOutOfStock: boolean;
+  userBalance: number;
+  onPurchase: (id: string, cost: number) => void;
+}> = ({ benefit, canPurchase, isOutOfStock, userBalance, onPurchase }) => {
+  const getButtonText = () => {
+    if (isOutOfStock) return 'Ausverkauft';
+    if (userBalance < benefit.coinCost) return 'Nicht genug Coins';
+    return 'Kaufen';
+  };
+
+  return (
+    <button
+      onClick={() => onPurchase(benefit.id, benefit.coinCost)}
+      disabled={!canPurchase}
+      className={cn(
+        "w-full py-2 px-4 rounded-lg font-medium transition-colors",
+        canPurchase
+          ? "bg-blue-600 text-white hover:bg-blue-700"
+          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+      )}
+    >
+      {getButtonText()}
+    </button>
+  );
+};
+
 export const BenefitCard: React.FC<BenefitCardProps> = ({
   benefit,
   userBalance,
@@ -47,19 +113,7 @@ export const BenefitCard: React.FC<BenefitCardProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center">
-          <span className="text-2xl mr-3">{getCategoryIcon(benefit.category)}</span>
-          <div>
-            <h3 className="font-semibold text-gray-900">{benefit.title}</h3>
-            <p className="text-xs text-gray-500">{getCategoryName(benefit.category)}</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-lg font-bold text-blue-600">{benefit.coinCost}</p>
-          <p className="text-xs text-gray-500">Coins</p>
-        </div>
-      </div>
+      <BenefitHeader benefit={benefit} />
       
       <p className="text-sm text-gray-600 mb-4">{benefit.description}</p>
       
@@ -70,36 +124,20 @@ export const BenefitCard: React.FC<BenefitCardProps> = ({
       )}
       
       {isAdmin && (
-        <div className="flex gap-2 mb-2">
-          <button
-            onClick={() => onEdit(benefit)}
-            className="flex-1 p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
-          >
-            ✏️ Bearbeiten
-          </button>
-          <button
-            onClick={() => onDelete(benefit.id)}
-            className="flex-1 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-          >
-            🗑️ Löschen
-          </button>
-        </div>
+        <AdminControls 
+          benefit={benefit} 
+          onEdit={onEdit} 
+          onDelete={onDelete} 
+        />
       )}
       
-      <button
-        onClick={() => onPurchase(benefit.id, benefit.coinCost)}
-        disabled={!canPurchase}
-        className={cn(
-          "w-full py-2 px-4 rounded-lg font-medium transition-colors",
-          canPurchase
-            ? "bg-blue-600 text-white hover:bg-blue-700"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-        )}
-      >
-        {isOutOfStock ? 'Ausverkauft' : 
-         userBalance < benefit.coinCost ? 'Nicht genug Coins' : 
-         'Kaufen'}
-      </button>
+      <PurchaseButton
+        benefit={benefit}
+        canPurchase={canPurchase}
+        isOutOfStock={isOutOfStock}
+        userBalance={userBalance}
+        onPurchase={onPurchase}
+      />
     </div>
   );
 };
