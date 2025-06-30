@@ -1,0 +1,87 @@
+
+> starter-pack@0.1.0 dev
+> next dev --turbo --port 1996 --port 3001
+
+   ▲ Next.js 15.3.4 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.2.64:3001
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Compiled middleware in 126ms
+ ✓ Ready in 925ms
+ ⚠ Webpack is configured while Turbopack is not, which may cause problems.
+ ⚠ See instructions if you need to configure Turbopack:
+  https://nextjs.org/docs/app/api-reference/next-config-js/turbo
+
+ ○ Compiling /hr/employees ...
+ ✓ Compiled /hr/employees in 1925ms
+ ✓ Compiled /_error in 176ms
+ GET /hr/employees 500 in 2265ms
+ ○ Compiling / ...
+ ✓ Compiled / in 536ms
+ GET / 500 in 571ms
+ GET / 500 in 56ms
+ GET / 500 in 73ms
+ GET / 500 in 28ms
+ ✓ Compiled in 443ms
+ ✓ Compiled in 298ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET / 200 in 320ms
+ GET /hr/employees 200 in 1118ms
+ ✓ Compiled /api/auth/[...nextauth] in 145ms
+[next-auth][warn][NEXTAUTH_URL] 
+https://next-auth.js.org/warnings#nextauth_url
+ GET /api/auth/session 200 in 102ms
+ GET / 200 in 291ms
+ GET /api/auth/session 304 in 7ms
+ GET /api/auth/session 304 in 6ms
+ ✓ Compiled /auth/login in 461ms
+ GET /_next/data/development/en/auth/login.json?redirect=%2Fauthorized 200 in 703ms
+ GET /api/auth/providers 200 in 18ms
+ GET /api/auth/csrf 200 in 4ms
+ POST /api/auth/callback/credentials 401 in 6ms
+ GET /api/auth/providers 304 in 8ms
+ GET /api/auth/csrf 304 in 7ms
+ POST /api/auth/callback/credentials 401 in 6ms
+ GET /api/auth/providers 304 in 15ms
+ GET /api/auth/csrf 304 in 6ms
+ POST /api/auth/callback/credentials 200 in 1015ms
+ GET /api/auth/session 200 in 12ms
+ ✓ Compiled /authorized in 467ms
+ GET /_next/data/development/en/authorized.json 200 in 690ms
+ ✓ Compiled middleware in 8ms
+ GET /authorized 200 in 347ms
+ ✓ Compiled in 937ms
+ GET / 200 in 859ms
+ GET /api/auth/session 200 in 16ms
+ GET /authorized 200 in 260ms
+ GET /api/auth/session 200 in 11ms
+ GET /api/auth/session 200 in 9ms
+ GET /hr/employees 200 in 267ms
+ GET /api/auth/session 200 in 17ms
+ GET /api/auth/session 200 in 25ms
+ ✓ Compiled in 318ms
+ ✓ Compiled middleware in 1ms
+ ⚠ Fast Refresh had to perform a full reload when [next]/entry/page-loader.ts { PAGE => "[project]/src/pages/index.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when [next]/entry/page-loader.ts { PAGE => "[project]/src/pages/index.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when [next]/entry/page-loader.ts { PAGE => "[project]/src/pages/hr/employees.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ○ Compiling /hr/employees ...
+ GET / 200 in 775ms
+ ✓ Compiled /hr/employees in 1788ms
+ GET /hr/employees 200 in 1625ms
+ GET /_next/data/development/en/hr/employees.json 200 in 2061ms
+ ✓ Compiled in 187ms
+ ✓ Compiled in 343ms
+ ✓ Compiled in 639ms
+ ✓ Compiled in 202ms
+ ✓ Compiled /hr/employees in 252ms
+Warning: [antd: Dropdown] `overlay` is deprecated. Please use `menu` instead.
+ GET /hr/employees 200 in 643ms
+ GET /hr/employees 200 in 269ms
+ ✓ Compiled /authorized in 221ms
+ GET /authorized 200 in 445ms
+ GET /api/auth/session 200 in 8ms
+ GET /api/auth/session 200 in 10ms
+ GET /hr/employees 200 in 292ms
+[?25h

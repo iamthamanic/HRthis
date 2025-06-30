@@ -65,7 +65,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   
   const tabs = [
     { path: '/dashboard', label: 'Übersicht', icon: '🏠' },
-    { path: '/requests', label: 'Anträge', icon: '📝' },
     { path: '/time-vacation', label: 'Zeit & Urlaub', icon: '⏰' },
     { path: '/learning', label: 'Lernen', icon: '🎓' },
     { path: '/benefits', label: 'Benefits', icon: '🎁' },

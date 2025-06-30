@@ -1,0 +1,191 @@
+{
+  "navigation": {
+    "home": "Ana Sayfa",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "menu": "Menü",
+    "account": "Hesabım",
+    "myAccount": "Hesabım",
+    "welcome": "Hoş Geldiniz"
+  },
+  "common": {
+    "test": "Türkçe Test",
+    "welcome": "Hoş Geldin",
+    "search": "Ara",
+    "showLess": "Daha Az Göster",
+    "showMore": "Daha Fazla Göster",
+    "seeAll": "Tümünü Gör",
+    "contactUs": "İletişim",
+    "contactUsDescription": "E-posta ile bize ulaşabilirsiniz.",
+    "logout": "Çıkış Yap",
+    "noLessons": "Henüz ders bulunmamaktadır.",
+    "welcomeTo": "{{brand}}'e Hoşgeldiniz",
+    "all": "Tümü",
+    "lastEvents": "Son Etkinlikler",
+    "reminders": "Hatırlatmalar",
+    "system": "Sistem",
+    "noEvents": "Gösterilecek etkinlik yok",
+    "noReminders": "Gösterilecek hatırlatma yok",
+    "noSystemNotifications": "Gösterilecek sistem bildirimi yok"
+  },
+  "auth": {
+    "student": "Öğrenci",
+    "teacher": "Öğretmen",
+    "header": "{{role}} hesabınız ile giriş yapın",
+    "email": "{{role}} E-posta",
+    "email-placeholder": "Lütfen {{role}} e-posta adresinizi giriniz",
+    "password": "Parola",
+    "password-placeholder": "Lütfen parolanızı giriniz",
+    "login": "Giriş Yap",
+    "forgotPassword": "Parolayı mı unuttunuz?",
+    "rememberMe": "Beni Hatırla",
+    "policy": "Devam etmekle, Gizlilik Politikası ve Kullanıcı Bilgileri Metnini kabul etmiş sayılırsınız.",
+    "login.success": "Giriş başarılı!",
+    "login.error": "Giriş başarısız!",
+    "logout.success": "Çıkış başarılı!",
+    "logout.error": "Çıkış başarısız!",
+    "loginAs": "{{role}} olarak giriş yap",
+    "customerSupport": "Müşteri Destek",
+    "termsOfService": "Kullanım Şartları"
+  },
+  "forgotPassword": {
+    "title": "Parolayı Sıfırla",
+    "description": "Lütfen şifrenizi sıfırlamak için bir e-posta adresi girin.",
+    "action": "Parolayı Sıfırla",
+    "email": "E-posta",
+    "email-placeholder": "Lütfen e-posta adresinizi giriniz."
+  },
+  "resetPassword": {
+    "title": "Yeni Parola Oluştur",
+    "description": "Lütfen yeni parolanızı girin.",
+    "action": "Parolayı Değiştir",
+    "password": "Yeni Parola",
+    "password-placeholder": "Yeni parolanızı girin",
+    "confirmPassword": "Parola Onayı",
+    "confirmPassword-placeholder": "Yeni parolanızı tekrar girin"
+  },
+  "course": {
+    "nextLesson": "Sonraki Ders",
+    "hoursLeft": "saat kaldı",
+    "status": {
+      "continue": "Öğrenmeye Devam Et",
+      "finished": "Bitti",
+      "notStarted": "Başlamadı"
+    },
+    "type": {
+      "video": "Video",
+      "research": " Araştırma",
+      "course": "Ders"
+    }
+  },
+  "dashboard": {
+    "planYourLesson": "Ders Planla",
+    "newTaskAssign": "Yeni Görev At",
+    "seeAllClass": "Tüm Dersleri Gör",
+    "seeAllTask": "Tüm Görevleri Gör",
+    "lessons": "Dersler",
+    "studentsTasks": "Öğrenci Görevleri",
+    "classesTasks": "Sınıf Görevleri",
+    "generalClassPerformance": "Genel Sınıf Performansı",
+    "generalSuccessRate": "Genel Başarı Oranı",
+    "average": "Ortalama",
+    "period": "Son 1 aylık veriler"
+  },
+  "sidebar": {
+    "overview": "Genel Bakış",
+    "classesAndStudents": "Dersler & Öğrenciler",
+    "courses": "Kurslar",
+    "profile": "Profil",
+    "lessons": "Dersler",
+    "studentTasks": "Öğrenci Görevleri",
+    "analysis": "Analiz",
+    "learningWay": "Öğrenme Yolu",
+    "tasks": "Görevler"
+  },
+  "studentTasks": {
+    "title": "Öğrenci Görevleri",
+    "giveFeedback": "Geri Bildirim Yap",
+    "downloadDocs": "Dökümanları İndir",
+    "noTasks": "Gösterilecek görev yok",
+    "addTask": "Görev Ekle",
+    "taskName": "Görev Adı",
+    "taskNamePlaceholder": "Çevrimiçi",
+    "taskDescription": "Görev Açıklaması",
+    "taskDescriptionPlaceholder": "Açıklama",
+    "deadline": "Son Teslim Tarihi",
+    "deadlinePlaceholder": "27 Nisan 2025",
+    "selectClass": "Sınıf/ları Seç",
+    "classPlaceholder": "Lorem Sınıfı",
+    "class1": "Lorem Sınıfı",
+    "class2": "Ipsum Sınıfı",
+    "class3": "Dolor Sınıfı",
+    "selectStudents": "Öğrenci/leri Seç",
+    "allClass": "Tüm Sınıf",
+    "student1": "Öğrenci 1",
+    "student2": "Öğrenci 2",
+    "uploadDocs": "Yeni Döküman Yükle",
+    "dragAndDrop": "Dosyalarınızı buraya sürükleyip bırakın veya",
+    "browse": "göz atın",
+    "maxFileSize": "Maksimum dosya boyutu 10MB",
+    "notifyWhenWatched": "Ders izlendiğinde bildir",
+    "mandatoryContent": "Zorunlu içerik"
+  },
+  "editLesson": {
+    "title": "Dersi Düzenle",
+    "declineLesson": "Dersi İptal Et",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "lessonName": "Ders Adı",
+    "lessonDescription": "Ders Açıklaması",
+    "lessonLevel": "Ders Seviyesi",
+    "lessonType": "Ders Tipi",
+    "meetLinkGenerated": "Google Meet / Zoom linki otomatik olarak oluşturulacaktır.",
+    "notifyWhenWatched": "Ders izlendiğinde bildir",
+    "mandatoryContent": "Zorunlu içerik",
+    "startTime": "Başlangıç Saati",
+    "endTime": "Bitiş Saati",
+    "selectClass": "Sınıf/ları Seç",
+    "docs": "Dökümanlar",
+    "uploaded": "Yüklendi",
+    "uploadNewDocs": "Yeni Döküman Yükle",
+    "dragAndDrop": "Dosyalarınızı buraya sürükleyip bırakın veya",
+    "browse": "göz atın",
+    "maxFileSize": "Maksimum dosya boyutu 10MB",
+    "uploadFiles": "Dosyaları yükle",
+    "level": {
+      "easy": "Kolay",
+      "medium": "Orta",
+      "hard": "Zor"
+    },
+    "type": {
+      "online": "Çevrimiçi",
+      "inPerson": "Yüz Yüze",
+      "hybrid": "Karma"
+    }
+  },
+  "classStudents": {
+    "classProgress": "Sınıf İlerlemesi",
+    "registered": "Kayıtlı",
+    "studentName": "Öğrenci Adı",
+    "studentNo": "Öğrenci No",
+    "successState": "Başarı Durumu",
+    "students": "Öğrenciler",
+    "subjectName": "Ders Adı",
+    "successPercentage": "Başarı Oranı",
+    "subjects": "Dersler",
+    "studentTaskName": "Öğrenci Görev Adı",
+    "score": "Puan",
+    "deliveryDate": "Teslim Tarihi",
+    "studentTasks": "Öğrenci Görevleri"
+  },
+  "notification": {
+    "notifications": "Bildirimler",
+    "delete": "Sil",
+    "deleteAll": "Tümünü Sil",
+    "seeAllNotifications": "Tüm Bildirimleri Gör",
+    "noNotifications": "Bildirim bulunmamaktadır.",
+    "backToNotifications": "Bildirimlere dön"
+  },
+  "authorized": {
+    "title": "Yetkili Sayfa"
+  }
+}

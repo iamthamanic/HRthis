@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+.landing-container {
+  @apply rounded-lg bg-gray-200 p-4 shadow-lg;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+
+  a {
+    @apply rounded-lg bg-blue-500 p-2 text-white flex flex-col gap-2;
+  }
+}

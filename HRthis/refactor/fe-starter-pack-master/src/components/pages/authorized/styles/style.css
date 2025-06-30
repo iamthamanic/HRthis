@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+.home-container {
+  @apply container mx-auto flex min-h-screen gap-10 flex-col p-4 items-center justify-start md:justify-center lg:flex-row lg:items-stretch lg:p-6 lg:py-28 lg:px-24;
+
+  .home-slider-container {
+    @apply relative w-full lg:w-1/2;
+  }
+
+  .home-auth-container {
+    @apply flex w-full flex-col items-center justify-center space-y-8 bg-white p-4 lg:w-1/2 lg:px-12;
+  }
+}

@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+.root-layout {
+  @apply container mx-auto flex min-h-screen gap-10 flex-col p-4 items-center justify-center md:justify-center lg:flex-row lg:items-stretch lg:p-6 lg:py-28 lg:px-24;
+}
