@@ -44,7 +44,7 @@ def health_check():
     return {"status": "healthy"}
 
 # Import routers
-from app.api import employees, auth
+from app.api import employees, auth, files
 from app.core.database import create_tables
 
 # Create tables on startup
@@ -55,6 +55,7 @@ def startup_event():
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(employees.router, prefix="/api/employees", tags=["employees"])
+app.include_router(files.router, prefix="/api/files", tags=["file-management"])
 
 if __name__ == "__main__":
     import uvicorn

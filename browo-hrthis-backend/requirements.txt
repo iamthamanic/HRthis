@@ -19,6 +19,7 @@ sib-api-v3-sdk==7.6.0
 # File Processing
 Pillow==11.0.0
 python-magic==0.4.27
+aiofiles==24.1.0
 
 # Utils
 pydantic==2.10.3

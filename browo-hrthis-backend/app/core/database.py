@@ -36,4 +36,5 @@ def get_db():
 def create_tables():
     """Create all database tables"""
     from app.models.employee import Employee
+    from app.models.file import FileMetadata
     Base.metadata.create_all(bind=engine)
