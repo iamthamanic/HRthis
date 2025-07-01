@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  hrthis-db:
+    image: postgres:16
+    container_name: hrthis-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hrthis
+      POSTGRES_USER: hrthis
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hrthis-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrthis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  hrthis-backend:
+    build: ./browo-hrthis-backend
+    container_name: hrthis-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://hrthis:${POSTGRES_PASSWORD}@hrthis-db:5432/hrthis
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    depends_on:
+      hrthis-db:
+        condition: service_healthy
+    volumes:
+      - ./browo-hrthis-backend/uploads:/app/uploads
+    networks:
+      - traefik
+      - hrthis-internal
+    labels:
+      # Traefik aktivieren
+      - "traefik.enable=true"
+      
+      # HTTP Router
+      - "traefik.http.routers.hrthis-api.rule=Host(`hrthis-api.kibubot.com`)"
+      - "traefik.http.routers.hrthis-api.entrypoints=websecure"
+      - "traefik.http.routers.hrthis-api.tls.certresolver=letsencrypt"
+      
+      # Service
+      - "traefik.http.services.hrthis-api.loadbalancer.server.port=8000"
+      
+      # CORS Headers
+      - "traefik.http.routers.hrthis-api.middlewares=cors-headers"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=https://hrthis.kibubot.com"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors-headers.headers.addvaryheader=true"
+      
+      # HTTP zu HTTPS Redirect
+      - "traefik.http.routers.hrthis-api-http.rule=Host(`hrthis-api.kibubot.com`)"
+      - "traefik.http.routers.hrthis-api-http.entrypoints=web"
+      - "traefik.http.routers.hrthis-api-http.middlewares=redirect-to-https"
+
+  # Frontend
+  hrthis-frontend:
+    build: ./hrthis-frontend
+    container_name: hrthis-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://hrthis-api.kibubot.com
+    networks:
+      - traefik
+    labels:
+      # Traefik aktivieren
+      - "traefik.enable=true"
+      
+      # HTTP Router
+      - "traefik.http.routers.hrthis.rule=Host(`hrthis.kibubot.com`)"
+      - "traefik.http.routers.hrthis.entrypoints=websecure"
+      - "traefik.http.routers.hrthis.tls.certresolver=letsencrypt"
+      
+      # Service
+      - "traefik.http.services.hrthis.loadbalancer.server.port=3000"
+      
+      # HTTP zu HTTPS Redirect
+      - "traefik.http.routers.hrthis-http.rule=Host(`hrthis.kibubot.com`)"
+      - "traefik.http.routers.hrthis-http.entrypoints=web"
+      - "traefik.http.routers.hrthis-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+networks:
+  traefik:
+    external: true
+  hrthis-internal:
+    driver: bridge
+
+volumes:
+  postgres_data:

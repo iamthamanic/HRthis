@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Shared PostgreSQL Database für alle Anwendungen
+  postgres:
+    image: postgres:16
+    container_name: global-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure-global-password}
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_global_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - global-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # HRThis Backend
+  hrthis-backend:
+    build: ./browo-hrthis-backend
+    container_name: hrthis-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://hrthis_user:${HRTHIS_DB_PASSWORD:-hrthis_password}@postgres:5432/hrthis_db
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./browo-hrthis-backend/uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    networks:
+      - global-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hrthis-api.rule=Host(`hrthis-api.kibubot.com`)"
+      - "traefik.http.routers.hrthis-api.entrypoints=websecure"
+      - "traefik.http.routers.hrthis-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hrthis-api.loadbalancer.server.port=8000"
+
+  # HRThis Frontend
+  hrthis-frontend:
+    build: ./HRthis
+    container_name: hrthis-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://hrthis-backend:8000
+    depends_on:
+      - hrthis-backend
+    networks:
+      - global-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hrthis-frontend.rule=Host(`hrthis.kibubot.com`)"
+      - "traefik.http.routers.hrthis-frontend.entrypoints=websecure"
+      - "traefik.http.routers.hrthis-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hrthis-frontend.loadbalancer.server.port=3000"
+
+  # pgAdmin für Datenbank-Management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - global-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.kibubot.com`)"
+      - "traefik.http.routers.pgadmin.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin.tls.certresolver=letsencrypt"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
+
+networks:
+  global-network:
+    driver: bridge
+    name: global-network
+
+volumes:
+  postgres_global_data:
+    name: postgres_global_data
+  pgadmin_data:
+    name: pgadmin_data
